@@ -1,3 +1,8 @@
+import os
+import board
+
+# print(os.uname())
+# print(dir(board))
 import sys
 sys.path.append('src')
 from splash_screen import SplashScreen
@@ -10,4 +15,3 @@ splash_screen.show()
 from colorimeter import Colorimeter 
 colorimeter = Colorimeter()
 colorimeter.run()
-

@@ -35,7 +35,6 @@ class LightSensor:
         value = self._device.raw_luminosity[self.channel]
         if value >= self.max_counts:
             raise LightSensorOverflow('light sensor reading > max_counts')
-        #print(value)
         return value
 
     @property

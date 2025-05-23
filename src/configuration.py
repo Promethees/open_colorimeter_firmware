@@ -89,9 +89,3 @@ class Configuration(JsonSettingsFile):
     @property
     def precision(self):
         return self.data['precision']
-
-
-
-            
-            
-    
