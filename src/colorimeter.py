@@ -148,17 +148,22 @@ class Colorimeter:
         return len(self.menu_items)
 
     def incr_menu_item_pos(self):
-        if self.menu_item_pos < self.num_menu_items-1:
-            self.menu_item_pos += 1
-        diff_pos = self.menu_item_pos - self.menu_view_pos
-        if diff_pos > self.menu_screen.items_per_screen-1:
-            self.menu_view_pos += 1
+        #Increment menu item position, wrapping to 0 if at the end.
+        self.menu_item_pos = (self.menu_item_pos + 1) % self.num_menu_items
+        items_per_screen = self.menu_screen.items_per_screen
+        if self.menu_item_pos < self.menu_view_pos:
+            self.menu_view_pos = self.menu_item_pos
+        elif self.menu_item_pos >= self.menu_view_pos + items_per_screen:
+            self.menu_view_pos = self.menu_item_pos - items_per_screen + 1
 
     def decr_menu_item_pos(self):
-        if self.menu_item_pos > 0:
-            self.menu_item_pos -= 1
+        #Decrement menu item position, wrapping to last item if at 0.
+        self.menu_item_pos = (self.menu_item_pos - 1) % self.num_menu_items
+        items_per_screen = self.menu_screen.items_per_screen
         if self.menu_item_pos < self.menu_view_pos:
-            self.menu_view_pos -= 1
+            self.menu_view_pos = self.menu_item_pos
+        elif self.menu_item_pos >= self.menu_view_pos + items_per_screen:
+            self.menu_view_pos = self.menu_item_pos - items_per_screen + 1
 
     def update_menu_screen(self):
         n0 = self.menu_view_pos
