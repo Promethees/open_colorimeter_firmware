@@ -66,6 +66,16 @@ class MeasureScreen:
         )
         self.blank_label.anchored_position = (center_x, 0)
 
+        # Create serial communication label
+        self.talking_label = label.Label(
+            fonts.font_10pt,
+            text="establshing communication",
+            color=constants.COLOR_TO_RGB["green"],
+            scale=font_scale,
+            anchor_point=(0.5, 1.0),
+        )
+        self.talking_label.anchored_position = (center_x, 0)
+
         # Create gain label
         self.gain_label = label.Label(
             fonts.font_10pt,
@@ -103,6 +113,7 @@ class MeasureScreen:
         self.group.append(self.header_label)
         self.group.append(self.value_label)
         self.group.append(self.type_label)
+        self.group.append(self.talking_label)
         self.group.append(self.blank_label)
         self.group.append(self.gain_label)
         self.group.append(self.itime_label)
@@ -114,9 +125,9 @@ class MeasureScreen:
             self.header_label.text = name
             self.value_label.text = "range error"
             self.value_label.color = constants.COLOR_TO_RGB["orange"]
-        elif value == "overflow":
+        elif value in ("overflow", "disconnected"):
             self.header_label.text = name
-            self.value_label.text = "overflow"
+            self.value_label.text = value
             self.value_label.color = constants.COLOR_TO_RGB["red"]
         else:
             self.header_label.text = name
@@ -154,6 +165,7 @@ class MeasureScreen:
         labels = [
             self.value_label,
             self.type_label,
+            self.talking_label,
             self.blank_label,
             self.gain_label,
             self.itime_label,
@@ -221,6 +233,21 @@ class MeasureScreen:
 
     def set_blanked(self):
         self.blank_label.text = " "
+
+    def set_stop_talking(self):
+        self.talking_label.text = "stop talking"
+
+    def set_not_talking(self):
+        self.talking_label.text = " "
+
+    def init_talking(self):
+        self.talking_label.text = " comm ready  "
+
+    def set_connected(self):
+        self.talking_label.text = "connected!"
+
+    def set_talking(self):
+        self.talking_label.text = " sending msgs "
 
     def set_gain(self, value):
         self.gain_label.text = f"gain={constants.GAIN_TO_STR[value]}" if value is not None else ""

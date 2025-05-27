@@ -6,6 +6,8 @@ import digitalio
 import keypad
 import constants
 import adafruit_itertools
+import usb_cdc
+import json
 
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
@@ -44,6 +46,8 @@ class Colorimeter:
         self.menu_item_pos = 0
         self.mode = Mode.MEASURE
         self.is_blanked = False
+        self.is_talking = False
+        self.serial_connected = False
         self.blank_value = 1.0
 
         # Create screens
@@ -131,6 +135,11 @@ class Colorimeter:
         # Setup battery monitoring settings cycles 
         self.battery_monitor = BatteryMonitor()
         self.setup_gain_and_itime_cycles()
+
+        # Enable USB serial
+        if usb_cdc.data is None:
+            usb_cdc.enable(data=True)
+        self.serial = usb_cdc.data
 
     def setup_gain_and_itime_cycles(self):
         self.gain_cycle = adafruit_itertools.cycle(constants.GAIN_TO_STR) 
@@ -279,6 +288,50 @@ class Colorimeter:
         # Debug: Uncomment to log successful blank value
         # print(f"Blank value: {self.blank_value}")
 
+    def serial_talking(self, set_talking=True, port=None):
+        """Establish USB serial communication to send measurement data using usb_cdc."""
+        if not set_talking:
+            self.is_talking = False
+            self.serial_connected = False
+            self.measure_screen.set_stop_talking()
+            self.measure_screen.show()
+            return
+
+        self.is_talking = True
+        if self.serial is None:
+            self.measure_screen.set_measurement(self.measurement_name, None, "disconnected", None)
+            self.mode = Mode.MESSAGE
+            self.is_talking = False
+            return
+
+        self.measure_screen.init_talking()
+        self.measure_screen.show()
+
+        # Wait for computer to connect
+        while self.is_talking and not self.serial_connected:
+            try:
+                # Send a test message to check connection
+                test_data = {"status": "ping"}
+                self.serial.write((json.dumps(test_data) + "\n").encode("utf-8"))
+                # Check if computer is reading (in_waiting > 0 indicates activity)
+                if self.serial.in_waiting > 0 or self.serial.connected:
+                    self.serial_connected = True
+                    self.measure_screen.set_connected()
+                    self.measure_screen.show()
+                    self.measure_screen.set_talking()
+                else:
+                    self.measure_screen.init_talking()
+                self.measure_screen.show()
+            except (OSError, ValueError) as e:
+                self.is_talking = False
+                self.serial_connected = False
+                self.message_screen.set_message(f"Serial error: {str(e)}")
+                self.message_screen.set_to_error()
+                self.mode = Mode.MESSAGE
+                return
+            self.handle_button_press()  # Allow exit via buttons
+            time.sleep(0.5)
+
     def blank_button_pressed(self, buttons):  
         if self.is_raw_sensor:
             return False
@@ -298,6 +351,9 @@ class Colorimeter:
 
     def right_button_pressed(self, buttons):
         return 'right' in buttons
+
+    def left_button_pressed(self, buttons):
+        return 'left' in buttons
 
     def gain_button_pressed(self, buttons):
         if self.is_raw_sensor:
@@ -336,6 +392,15 @@ class Colorimeter:
                     self.measure_screen.set_blanked()
                 else:
                     self.is_blanked = False
+            elif self.left_button_pressed(pressed_buttons):
+                if not self.is_talking:
+                    self.measure_screen.init_talking()
+                    self.serial_talking()
+                    if self.mode == Mode.MESSAGE:
+                        return
+                    self.measure_screen.set_talking()
+                else:
+                    self.is_talking = False
             elif self.menu_button_pressed(pressed_buttons):
                 self.mode = Mode.MENU
                 self.menu_view_pos = 0
@@ -394,17 +459,42 @@ class Colorimeter:
         while True:
             self.handle_button_press()
             if self.mode == Mode.MEASURE:
-                try:
-                    numeric_value, type_tag = self.measurement_value
-                    self.measure_screen.set_measurement(
-                        self.measurement_name, 
-                        self.measurement_units, 
-                        numeric_value,
-                        self.configuration.precision if isinstance(numeric_value, (int, float)) else None,
-                        type_tag=type_tag 
-                    )
-                except LightSensorOverflow:
-                    self.measure_screen.set_measurement(self.measurement_name, None, 'overflow', None)
+                if self.is_talking and self.serial_connected:
+                    try:
+                        numeric_value, type_tag = self.measurement_value
+                        data = {
+                            "timestamp": time.monotonic(),
+                            "measurement": self.measurement_name,
+                            "value": numeric_value,
+                            "units": self.measurement_units,
+                            "type_tag": type_tag
+                        }
+                        self.serial.write((json.dumps(data) + "\n").encode("utf-8"))
+                        self.measure_screen.set_measurement(
+                            self.measurement_name, 
+                            self.measurement_units, 
+                            numeric_value,
+                            self.configuration.precision if isinstance(numeric_value, (int, float)) else None,
+                            type_tag=type_tag 
+                        )
+                    except (OSError, ValueError):
+                        self.is_talking = False
+                        self.serial_connected = False
+                        self.measure_screen.set_measurement(self.measurement_name, None, "disconnected", None)
+                    except LightSensorOverflow:
+                        self.measure_screen.set_measurement(self.measurement_name, None, "overflow", None)
+                else:
+                    try:
+                        numeric_value, type_tag = self.measurement_value
+                        self.measure_screen.set_measurement(
+                            self.measurement_name, 
+                            self.measurement_units, 
+                            numeric_value,
+                            self.configuration.precision if isinstance(numeric_value, (int, float)) else None,
+                            type_tag=type_tag 
+                        )
+                    except LightSensorOverflow:
+                        self.measure_screen.set_measurement(self.measurement_name, None, 'overflow', None)
 
                 if self.is_raw_sensor:
                     self.measure_screen.set_blanked()
@@ -417,6 +507,10 @@ class Colorimeter:
                         self.measure_screen.set_blanked()
                     else:
                         self.measure_screen.set_not_blanked()
+                    if self.is_talking:
+                        self.measure_screen.init_talking()
+                    else:
+                        self.measure_screen.set_not_talking()
                     self.measure_screen.clear_gain()
                     self.measure_screen.clear_integration_time()
 
