@@ -466,6 +466,8 @@ class Colorimeter:
                             type_tag=type_tag,
                             talking=self.is_talking
                         )
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for MenuScreen")
                     except (ValueError, RuntimeError) as e:
                         self._log_error(f"HID send error: {e}")
                         self.is_talking = False
@@ -484,27 +486,34 @@ class Colorimeter:
                             type_tag=type_tag,
                             talking=self.is_talking
                         )
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for MenuScreen")
                     except LightSensorOverflow:
                         self.measure_screen.set_measurement(self.measurement_name, None, "overflow", None)
 
                 if self.is_raw_sensor:
-                    self.measure_screen.set_blanked()
-                    self.measure_screen.set_gain(self.light_sensor.gain)
-                    self.measure_screen.set_integration_time(self.light_sensor.integration_time)
-                else:
-                    if self.is_blanked:
+                    try:
                         self.measure_screen.set_blanked()
-                    else:
-                        self.measure_screen.set_not_blanked()
-                    self.measure_screen.clear_gain()
-                    self.measure_screen.clear_integration_time()
+                        self.measure_screen.set_gain(self.light_sensor.gain)
+                        self.measure_screen.set_integration_time(self.light_sensor.integration_time)
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for MenuScreen")
+                else:
+                    try:
+                        if self.is_blanked:
+                            self.measure_screen.set_blanked()
+                        else:
+                            self.measure_screen.set_not_blanked()
+                        self.measure_screen.clear_gain()
+                        self.measure_screen.clear_integration_time()
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for MenuScreen")
 
                 self.battery_monitor.update()
                 self.measure_screen.set_bat(self.battery_monitor.voltage_lowpass)
                 self.measure_screen.show()
 
             elif self.mode == Mode.MENU:
-                print("I'm in MENU already!")
                 if self.menu_screen is None:
                     continue  # MenuScreen should already be created in handle_button_press
                 self.update_menu_screen()
