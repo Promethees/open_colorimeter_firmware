@@ -14,6 +14,8 @@ DEBOUNCE_DT = 0.6
 NUM_BLANK_SAMPLES = 50 
 BATTERY_AIN_PIN = board.A6
 
+DATA_TRANSMISSION_INTERVAL = 15
+
 BUTTON = { 
         'none'  : 0b00000000,
         'left'  : 0b10000000,
@@ -34,6 +36,7 @@ COLOR_TO_RGB = collections.OrderedDict([
     ('blue'   , 0x0000ff),
     ('white'  , 0xffffff), 
     ('orange' , 0xffb447),
+    ('yellow' , 0xffff00)
     ])
 
 STR_TO_GAIN = collections.OrderedDict([

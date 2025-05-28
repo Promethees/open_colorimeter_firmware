@@ -50,6 +50,7 @@ class Colorimeter:
         self.blank_value = 1.0
         self.keyboard = None
         self.layout = None
+        self.last_transmission_time = 0.0
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -208,22 +209,29 @@ class Colorimeter:
 
     @property
     def raw_sensor_value(self):
-        return self.light_sensor.value
+        value = self.light_sensor.value
+        # Debug: Uncomment to log TSL2591 readings
+        # print(f"TSL2591 raw value: {value}")
+        return value
 
     @property
     def transmittance(self):
         if self.blank_value <= 0:
-            self._log_error("Invalid blank value")
+            self.message_screen.set_message("Error: Invalid blank value ")
+            self.message_screen.set_to_error()
+            self.mode = Mode.MESSAGE
             return 0.0
-        return float(self.raw_sensor_value) / self.blank_value
+        transmittance = float(self.raw_sensor_value) / self.blank_value
+        return transmittance
 
     @property
     def absorbance(self):
         try:
             absorbance = -ulab.numpy.log10(self.transmittance)
-            return max(absorbance, 0.0)
+            absorbance = absorbance if absorbance > 0.0 else 0.0
         except ValueError:
-            return 0.0
+            absorbance = 0.0
+        return absorbance
 
     @property
     def measurement_value(self):
@@ -435,8 +443,12 @@ class Colorimeter:
                         numeric_value, type_tag = self.measurement_value
                         units = self.measurement_units or ""
                         type_tag = type_tag or "None"
-                        data_str = f"{time.monotonic():.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag}\n"
-                        self.layout.write(data_str)
+
+                        current_time = time.monotonic()
+                        if current_time - self.last_transmission_time >= constants.DATA_TRANSMISSION_INTERVAL:
+                            self.last_transmission_time = current_time
+                            data_str = f"{time.monotonic():.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag}\n"
+                            self.layout.write(data_str)
                         self.measure_screen.set_measurement(
                             self.measurement_name,
                             self.measurement_units,
