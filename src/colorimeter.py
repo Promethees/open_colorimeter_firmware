@@ -51,6 +51,7 @@ class Colorimeter:
         self.keyboard = None
         self.layout = None
         self.last_transmission_time = 0.0
+        self.calibrations_checked = False
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -137,9 +138,18 @@ class Colorimeter:
 
     def _log_error(self, message):
         """Log errors to display."""
+        self.mode = Mode.MESSAGE
+        self.menu_screen = None
+        if self.mode == Mode.MESSAGE and self.message_screen is None:
+            gc.collect()
+            gc.mem_free()
+            try:
+                self.message_screen = MessageScreen()
+            except MemoryError:
+                self._log_error("Memory allocation failed for Message Screen")        
         self.message_screen.set_message(f"Error: {message}")
         self.message_screen.set_to_error()
-        self.mode = Mode.MESSAGE
+        gc.collect()
 
     def setup_gain_and_itime_cycles(self):
         self.gain_cycle = adafruit_itertools.cycle(constants.GAIN_TO_STR)
@@ -291,8 +301,7 @@ class Colorimeter:
                 self.layout = KeyboardLayoutUS(self.keyboard)
             except Exception as e:
                 self._log_error(f"HID setup error: {e}")
-                self.is_talking = False
-                self.mode = Mode.MESSAGE
+                self.is_talking = False      
                 return
 
         self.measure_screen.set_measurement(self.measurement_name, None, "comm init", None, talking=self.is_talking)
@@ -370,7 +379,6 @@ class Colorimeter:
                     self.menu_screen = MenuScreen()
                 except MemoryError:
                     self._log_error("Memory allocation failed for MenuScreen")
-                    self.mode = Mode.MESSAGE
             elif self.gain_button_pressed(pressed_buttons):
                 self.light_sensor.gain = next(self.gain_cycle)
                 self.is_blanked = False
@@ -379,19 +387,15 @@ class Colorimeter:
                 self.is_blanked = False
 
         elif self.mode == Mode.MENU:
-            if self.menu_button_pressed(pressed_buttons):
-                self.menu_screen.group = displayio.Group()
-                gc.collect()
-                self.menu_screen = None
-                self.measure_screen = None  # Clear reference to force reinitialization
-                self.mode = Mode.MEASURE
-            elif self.up_button_pressed(pressed_buttons):
-                self.decr_menu_item_pos()
-            elif self.down_button_pressed(pressed_buttons):
-                self.incr_menu_item_pos()
-            elif self.right_button_pressed(pressed_buttons) or self.left_button_pressed(pressed_buttons):
+            if self.menu_button_pressed(pressed_buttons) or self.right_button_pressed(pressed_buttons) or self.left_button_pressed(pressed_buttons):
                 selected_item = self.menu_items[self.menu_item_pos]
                 if selected_item == self.ABOUT_STR:
+                    if self.message_screen is None:
+                        gc.collect()
+                        try:
+                            self.message_screen = MessageScreen()
+                        except MemoryError:
+                            self._log_error("Memory allocation failed for Message Screen") 
                     about_msg = f'firmware version {constants.__version__}'
                     self.message_screen.set_message(about_msg)
                     self.message_screen.set_to_about()
@@ -403,25 +407,31 @@ class Colorimeter:
                     self.measure_screen = None  # Clear reference to force reinitialization
                     self.measurement_name = self.menu_items[self.menu_item_pos]
                     self.mode = Mode.MEASURE
+            elif self.up_button_pressed(pressed_buttons):
+                self.decr_menu_item_pos()
+            elif self.down_button_pressed(pressed_buttons):
+                self.incr_menu_item_pos()
             # Only update the menu screen if still in MENU mode
             if self.mode == Mode.MENU:
                 self.update_menu_screen()
 
-        elif self.mode == Mode.MESSAGE:
-            if self.menu_button_pressed(pressed_buttons) or self.right_button_pressed(pressed_buttons):
-                self.message_screen.group = displayio.Group()
-                gc.collect()
-                self.measure_screen = None  # Clear reference
-                self.mode = Mode.MEASURE
-            elif self.calibrations.has_errors:
+        elif self.mode == Mode.MESSAGE or self.mode == Mode.ABORT:
+            if pressed_buttons: # Any button pressed
+                self.message_screen = None
+                self.measure_screen = None
+                gc.collect()                
+                self.mode = Mode.MENU
+                if self.menu_screen is None:
+                    gc.collect()
+                    try:
+                        self.menu_screen = MenuScreen()
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for MenuScreen")
+            elif not self.calibrations_checked and self.calibrations.has_errors:
                 self.message_screen.set_message(self.calibrations.pop_error())
                 self.message_screen.set_to_error()
                 self.mode = Mode.MESSAGE
-
-        elif self.mode == Mode.ABORT:
-            if self.menu_button_pressed(pressed_buttons) or self.right_button_pressed(pressed_buttons):
-                self.measure_screen = None  # Clear reference
-                self.mode = Mode.MEASURE
+                self.calibrations_checked = True
 
     def check_debounce(self):
         return time.monotonic() - self.last_button_press >= constants.DEBOUNCE_DT
@@ -436,7 +446,6 @@ class Colorimeter:
                         self.measure_screen = MeasureScreen()
                     except MemoryError:
                         self._log_error("Memory allocation failed for MeasureScreen")
-                        self.mode = Mode.MESSAGE
                         continue
                 if self.is_talking and self.serial_connected and self.keyboard and self.layout:
                     try:
@@ -495,6 +504,7 @@ class Colorimeter:
                 self.measure_screen.show()
 
             elif self.mode == Mode.MENU:
+                print("I'm in MENU already!")
                 if self.menu_screen is None:
                     continue  # MenuScreen should already be created in handle_button_press
                 self.update_menu_screen()
