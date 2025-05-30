@@ -16,6 +16,8 @@ BATTERY_AIN_PIN = board.A6
 
 DATA_TRANSMISSION_INTERVAL = 15
 
+CONNECTION_WAIT_TIME = 5
+
 BUTTON = { 
         'none'  : 0b00000000,
         'left'  : 0b10000000,

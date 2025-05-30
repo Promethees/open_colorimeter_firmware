@@ -52,6 +52,7 @@ class Colorimeter:
         self.layout = None
         self.last_transmission_time = 0.0
         self.calibrations_checked = False
+        self.serial_start_time = None
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -290,6 +291,7 @@ class Colorimeter:
             self.measure_screen.show()
             self.keyboard = None
             self.layout = None
+            self.serial_start_time = None
             gc.collect()
             time.sleep(0.5)
             return
@@ -307,10 +309,13 @@ class Colorimeter:
         self.measure_screen.set_measurement(self.measurement_name, None, "comm init", None, talking=self.is_talking)
         self.measure_screen.show()
 
+        if self.serial_start_time is None:
+            self.serial_start_time = time.monotonic() + constants.CONNECTION_WAIT_TIME
+
         start_time = time.monotonic()
         while self.is_talking and not self.serial_connected:
             self.handle_button_press()
-            if time.monotonic() - start_time > 5:
+            if time.monotonic() - start_time > constants.CONNECTION_WAIT_TIME:
                 self.serial_connected = True
                 self.measure_screen.set_measurement(self.measurement_name, None, "connected", None, talking=self.is_talking)
                 self.measure_screen.show()
@@ -454,9 +459,10 @@ class Colorimeter:
                         type_tag = type_tag or "None"
 
                         current_time = time.monotonic()
+                        relative_time = current_time - self.serial_start_time
                         if current_time - self.last_transmission_time >= constants.DATA_TRANSMISSION_INTERVAL:
                             self.last_transmission_time = current_time
-                            data_str = f"{time.monotonic():.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag}\n"
+                            data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag}\n"
                             self.layout.write(data_str)
                         self.measure_screen.set_measurement(
                             self.measurement_name,
