@@ -308,6 +308,7 @@ class Colorimeter:
 
         self.measure_screen.set_measurement(self.measurement_name, None, "comm init", None, talking=self.is_talking)
         self.measure_screen.show()
+        self.layout.write("Timestamp, Measurement, Value, Units, Type Tag\n")
 
         if self.serial_start_time is None:
             self.serial_start_time = time.monotonic() + constants.CONNECTION_WAIT_TIME
@@ -455,7 +456,7 @@ class Colorimeter:
                 if self.is_talking and self.serial_connected and self.keyboard and self.layout:
                     try:
                         numeric_value, type_tag = self.measurement_value
-                        units = self.measurement_units or ""
+                        units = self.measurement_units or "None"
                         type_tag = type_tag or "None"
 
                         current_time = time.monotonic()
