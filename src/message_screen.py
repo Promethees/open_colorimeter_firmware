@@ -73,6 +73,14 @@ class MessageScreen:
         for message_label in self.message_label_list:
             self.group.append(message_label)
 
+    def clear(self):
+        """Clear all items from the group except the tile_grid."""
+        while len(self.group) > 1:  # Keep tile_grid as the first item
+            self.group.pop()
+        self.group.append(self.header_label)  # Re-add header for consistency
+        for message_label in self.message_label_list:
+            self.group.append(message_label)
+
     def set_message(self, message, ok_to_continue=True):
         if ok_to_continue:
             message_extended = f'{message}. Press any key to continue.'
@@ -96,4 +104,3 @@ class MessageScreen:
 
     def show(self):
         board.DISPLAY.root_group = self.group
-
