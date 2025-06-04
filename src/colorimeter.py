@@ -308,7 +308,7 @@ class Colorimeter:
 
         self.measure_screen.set_measurement(self.measurement_name, None, "comm init", None, talking=self.is_talking)
         self.measure_screen.show()
-        self.layout.write("Timestamp,Measurement,Value,Unit,Type\n")
+        self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked\n")
 
         if self.serial_start_time is None:
             self.serial_start_time = time.monotonic() + constants.CONNECTION_WAIT_TIME
@@ -461,9 +461,12 @@ class Colorimeter:
 
                         current_time = time.monotonic()
                         relative_time = current_time - self.serial_start_time
+                        if relative_time > 20*60:
+                            self.is_talking = False
                         if current_time - self.last_transmission_time >= constants.DATA_TRANSMISSION_INTERVAL:
                             self.last_transmission_time = current_time
-                            data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag}\n"
+                            blanked = "True" if self.is_blanked else "False"
+                            data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag},{blanked}\n"
                             self.layout.write(data_str)
                         self.measure_screen.set_measurement(
                             self.measurement_name,

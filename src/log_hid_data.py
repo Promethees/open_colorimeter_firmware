@@ -37,8 +37,8 @@ class HIDDataCollector:
         self.output_file = None
         self.running = True
         self.buffer = ""
-        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNIT,TYPE\n$"
-        self.data_pattern = r"^\d+\.\d{1,2},[A-Za-z]+,\d+\.\d{1,2},[A-Za-z]+,[A-Za-z]+\n$"
+        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNIT,TYPE,BLANKED\n$"
+        self.data_pattern = r"^\d+\.\d{1,2},[A-Za-z]+,\d+\.\d{1,2},[A-Za-z]+,[A-Za-z]+,[A-Za-z]+\n$"
         self.session_started = False
 
     def find_pybadge(self):
