@@ -461,7 +461,7 @@ class Colorimeter:
 
                         current_time = time.monotonic()
                         relative_time = current_time - self.serial_start_time
-                        if relative_time > 20*60:
+                        if constants.TIMEOUT_IN_MINUTES and relative_time > constants.TIMEOUT_IN_MINUTES*60:
                             self.is_talking = False
                         if current_time - self.last_transmission_time >= constants.DATA_TRANSMISSION_INTERVAL:
                             self.last_transmission_time = current_time
