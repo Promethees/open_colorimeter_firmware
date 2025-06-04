@@ -37,7 +37,7 @@ class HIDDataCollector:
         self.output_file = None
         self.running = True
         self.buffer = ""
-        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNITS,TYPE\n$"
+        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNIT,TYPE\n$"
         self.data_pattern = r"^\d+\.\d{1,2},[A-Za-z]+,\d+\.\d{1,2},[A-Za-z]+,[A-Za-z]+\n$"
         self.session_started = False
 
@@ -89,7 +89,7 @@ class HIDDataCollector:
         self.output_file = self.get_next_filename()
         os.makedirs(self.base_dir, exist_ok=True)
         with open(self.output_file, "w") as f:
-            f.write("Timestamp,Measurement,Value,Units,Type\n")
+            f.write("Timestamp,Measurement,Value,Unit,Type\n")
         print(f"New session started. Header written to {self.output_file}")
 
     def process_data(self, data):
