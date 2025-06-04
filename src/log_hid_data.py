@@ -89,13 +89,13 @@ class HIDDataCollector:
         self.output_file = self.get_next_filename()
         os.makedirs(self.base_dir, exist_ok=True)
         with open(self.output_file, "w") as f:
-            f.write("Timestamp,Measurement,Value,Unit,Type\n")
+            f.write("Timestamp,Measurement,Value,Unit,Type,Blanked\n")
         print(f"New session started. Header written to {self.output_file}")
 
     def process_data(self, data):
         try:
-            timestamp, measurement_name, value, units, type_tag = data.strip().split(',')
-            print(f"Received: Timestamp: {timestamp}s, Measurement: {measurement_name}, Value: {value} {units}, Type: {type_tag}")
+            timestamp, measurement_name, value, units, type_tag, blanked = data.strip().split(',')
+            print(f"Received: Timestamp: {timestamp}s, Measurement: {measurement_name}, Value: {value} {units}, Type: {type_tag}, Blanked: {blanked}")
             with open(self.output_file, "a") as f:
                 f.write(data)
         except ValueError as e:
