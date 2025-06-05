@@ -4,6 +4,7 @@ import datetime
 import os
 import re
 import glob
+import argparse
 
 # PyBadge USB VID and PID (Adafruit PyBadge)
 PYBADGE_VID = 0x239A  # Adafruit's Vendor ID
@@ -146,7 +147,23 @@ class HIDDataCollector:
             device.close()
             print("HID device closed.")
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="HID Data Collector for PyBadge")
+    parser.add_argument(
+        "--base-dir",
+        type=str,
+        default=os.path.join(os.getcwd(), "data"),
+        help="Directory to save output CSV files (default: ./data)"
+    )
+    parser.add_argument(
+        "--base-name",
+        type=str,
+        default="colorimeter_data",
+        help="Base name for output CSV files (default: colorimeter_data)"
+    )
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    base_dir = os.path.join(os.getcwd(), "data")
-    collector = HIDDataCollector(base_dir)
+    args = parse_arguments()
+    collector = HIDDataCollector(args.base_dir, args.base_name)
     collector.start()

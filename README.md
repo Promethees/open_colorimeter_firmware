@@ -43,10 +43,13 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 Data recorded will be saved in `\data` folder
 
 ### MacOS
-* Compile the code by: `chmod +x log_hid_data.py`, then run with administrator right (important!) `sudo python3 log_hid_data.py`
+* Compile the code by: `chmod +x log_hid_data.py`, then run with administrator right (important!) 
+* `sudo python3 log_hid_data.py` to save recorded file to `data` folder in the same location with the name format of `colorimeter_data_xx.csv` by default
+* To modify the saving location and file name's format, use this syntax `sudo python3 log_hid_data.py --base-dir </path/to/saving/location> --base-name <>` 
 
 ### Windows 
-* Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py`
+* Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
+* `python log_hid_data.py --base-dir <> --base-name <>` to specify your desired location and naming convention.
 
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
