@@ -77,7 +77,7 @@ class HIDDataCollector:
             self.buffer += ' '
         else:
             self.buffer += key
-        print(f"Current buffer is {self.buffer}")
+        # print(f"Current buffer is {self.buffer}")
 
     def is_header(self, line):
         return bool(re.match(self.header_pattern, line))
@@ -147,6 +147,6 @@ class HIDDataCollector:
             print("HID device closed.")
 
 if __name__ == "__main__":
-    base_dir = os.path.join(os.getcwd(), "../data")
+    base_dir = os.path.join(os.getcwd(), "data")
     collector = HIDDataCollector(base_dir)
     collector.start()
