@@ -50,7 +50,7 @@ Data recorded will be saved in `\data` folder
 
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
-* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter <img src="/images/Reset_button.jpeg" width="10"> to reboot
+* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter <img src="/images/Reset_button.jpeg" width="100"> to reboot
 * After rebooting, the `code.py` (orifinally `code_check_keyboardHID`) should print out `HID enabled: True`
 * Then, you can use `usb_hid` as usual
 
