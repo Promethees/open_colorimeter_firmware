@@ -51,6 +51,13 @@ Data recorded will be saved in `\data` folder
 * Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
 * `python log_hid_data.py --base-dir <> --base-name <>` to specify your desired location and naming convention.
 
+### (Optional) Syncing in real-time read data to Google Drive.
+* Download Google Drive Desktop application from [](https://support.google.com/a/users/answer/13022292?hl=en)
+* Create an empty folder on local computer to host the synced folder to Google Drive.
+* Open Google Drive Desktop applications, sign in, select **Settings** (the Gear Icon) > **Preferences**. We now have **Google Drive Preferences** panel opening <img src="/images/Drive_Preferences.png" width="100">. Select **Add Folder** to select the just created empty Folder for syncing. 
+* Retrieving directory name of the synced folder: On Windows, open it in File Explorer, get the path on the File Browser search bar. On Mac, locate the folder in **Finder**, right click on the folder, go to "Services" (last row)> "New Terminal at Folder", type ```pwd``` in the Terminal to get the path.
+* Set `--base-dir` to the path to the synced Drive folder
+
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
 * Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter <img src="/images/Reset_button.jpeg" width="100"> to reboot
