@@ -48,7 +48,7 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 * How should it look like <img src="/images/Measure.jpeg" width="100">.
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!. WARNING: The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
-- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it ![colorimeter send msgs](/images/sendingmsgs.gif), but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
+- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it <img src="/images/sendingmsgs.gif" width="200">, but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
 - Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
 
 ### Message
@@ -75,7 +75,7 @@ Data recorded will be saved in `\data` folder by default
 ### (Optional) Syncing in real-time read data to Google Drive.
 * Download Google Drive Desktop application from [](https://support.google.com/a/users/answer/13022292?hl=en)
 * Create an empty folder on local computer to host the synced folder to Google Drive.
-* Open Google Drive Desktop applications, sign in, select **Settings** (the Gear Icon) > **Preferences**. We now have **Google Drive Preferences** panel opening <img src="/images/Drive_Preferences.png" width="100">. Select **Add Folder** to select the just created empty Folder for syncing. 
+* Open Google Drive Desktop applications, sign in, select **Settings** (the Gear Icon) > **Preferences**. We now have **Google Drive Preferences** panel opening <img src="/images/Drive_Preferences.png" width="200">. Select **Add Folder** to select the just created empty Folder for syncing. 
 * Retrieving directory name of the synced folder: On Windows, open it in File Explorer, get the path on the File Browser search bar. On Mac, locate the folder in **Finder**, right click on the folder, go to "Services" (last row)> "New Terminal at Folder", type ```pwd``` in the Terminal to get the path.
 * Set `--base-dir` to the path to the synced Drive folder
 
