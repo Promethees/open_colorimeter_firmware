@@ -1,8 +1,8 @@
-# Open Colorimeter Firmware for low-cost MicroAlbumin measurement 
+# Open Colorimeter Firmware for Easy Sensor for colorimetric assay 
 
 ![alt text](/images/open_colorimeter.png)
 
-This document provides details of our solution for a low-cost, handy MicroAlbumin measurement based on [IORodeo Open Colorimeter](https://iorodeo.com/products/open-colorimeter) 
+This document provides details of our solution for a low-cost, handy colorimetric assay based on [IORodeo Open Colorimeter](https://iorodeo.com/products/open-colorimeter) 
 
 ## Requirements (Adafruit PyBadge)
 
@@ -39,13 +39,34 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 ### Windows
 * Right click on `install_windows.sh` > "Run as Administrator" or launch it in **Administrator Command Prompt** 
 
+## Navigation (Adafruit PyBadge)
+### Menu
+* How should it look like <img src="/images/Menu.jpeg" width="100">. 
+* On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
+
+### Measure
+* How should it look like <img src="/images/Measure.jpeg" width="100">.
+* Define and modify the setup parameters for this mode in `calibrations.json`. 
+* Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!. WARNING: The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
+- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it ![sending msgs](/images/sendingmsgs.mp4), but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
+- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
+
+### Message
+* Has two forms, About <img src="/images/About.jpeg" width="100"> and Error <img src="/images/Error.jpeg" width="100">. Press any button to get back to Menu mode.
+
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
-Data recorded will be saved in `\data` folder
+Data recorded will be saved in `\data` folder by default
 
 ### MacOS
 * Compile the code by: `chmod +x log_hid_data.py`, then run with administrator right (important!) 
 * `sudo python3 log_hid_data.py` to save recorded file to `data` folder in the same location with the name format of `colorimeter_data_xx.csv` by default
 * To modify the saving location and file name's format, use this syntax `sudo python3 log_hid_data.py --base-dir </path/to/saving/location> --base-name <>` 
+* Example: In terminal, execute `sudo python3 log_hid_data.py --base-dir /Users/tqmthong/Desktop/data --base-name hello`
+* Understand the log: 
+- This verifies that the PyBadge is found with correct VID (vendor ID), PID (product ID) set <img src="/images/foundPyBadge.png">
+- When you press Left button on the PyBadge, the host computer recognise and create Folder for it <img src="/images/firstLocation.png">
+- `log_hid_data.py` then echoes data sent by PyBadge to the host computer <img src="/images/DataSent.png">
+- You stop, then press again, `log_hid_data.py` will automatically knows to rename the saving file to avoid overwritten (hello_1 instead of hello_0) <img src="/images/secondLocation.png">
 
 ### Windows 
 * Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
