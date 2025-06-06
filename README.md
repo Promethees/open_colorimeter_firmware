@@ -72,6 +72,10 @@ Data recorded will be saved in `\data` folder by default
 * Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
 * `python log_hid_data.py --base-dir <> --base-name <>` to specify your desired location and naming convention.
 
+### Changing Transmission interval and data recording time (Adafruit PyBadge)
+* We can modify those parameters by modifying values of `DATA_TRANSMISSION_INTERVAL` (in seconds) and TIMEOUT_IN_MINUTES `src/constant.py` in the ***CIRCUITPY*** drive
+* After changing them, and save the file, PyBadge'll automatically load these changes to the code
+
 ### (Optional) Syncing in real-time read data to Google Drive.
 * Download Google Drive Desktop application from [](https://support.google.com/a/users/answer/13022292?hl=en)
 * Create an empty folder on local computer to host the synced folder to Google Drive.
