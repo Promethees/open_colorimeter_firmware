@@ -161,7 +161,14 @@ def parse_arguments():
         default="colorimeter_data",
         help="Base name for output CSV files (default: colorimeter_data)"
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    # Check if the provided base_dir is an environment variable
+    base_dir = os.getenv(args.base_dir, args.base_dir)
+    
+    # Ensure the directory path is absolute and normalized
+    args.base_dir = os.path.abspath(os.path.expanduser(base_dir))
+    return args
 
 if __name__ == "__main__":
     args = parse_arguments()
