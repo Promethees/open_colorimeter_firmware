@@ -480,6 +480,16 @@ class Colorimeter:
                 self.transmission_interval_unit = values["interval_unit"]
                 if self.timeout_value and self.timeout_unit:
                     if self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
+                        # self.settings_screen.group = displayio.Group()
+                        # gc.collect()
+                        self.settings_screen = None
+                        gc.collect()
+                        if self.message_screen is None:
+                                gc.collect()
+                                try:
+                                    self.message_screen = MessageScreen()
+                                except MemoryError:
+                                    self._log_error("Memory allocation failed for Message Screen")
                         self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
                         self.message_screen.set_to_error()
                         self.in_settings = False
@@ -490,8 +500,8 @@ class Colorimeter:
                         self.transmission_interval_unit = values["prev_interval_unit"]
                     else:
                         try:
-                            self.settings_screen.group = displayio.Group()
-                            gc.collect()
+                            # self.settings_screen.group = displayio.Group()
+                            # gc.collect()
                             self.settings_screen = None
                             gc.collect()
                             if self.message_screen is None:
@@ -570,7 +580,7 @@ class Colorimeter:
 
                         current_time = time.monotonic()
                         relative_time = current_time - self.serial_start_time
-                        if timeout_value and timeout_unit:
+                        if self.timeout_value and self.timeout_unit:
                             timeout_seconds = self._convert_to_seconds(self.timeout_value, self.timeout_unit)
                             if timeout_seconds and relative_time > timeout_seconds:
                                 self.is_talking = False

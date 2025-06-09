@@ -193,6 +193,9 @@ class SettingsScreen:
             current_unit_index = self.UNIT_CYCLE.index(item["unit"])
             next_unit = self.UNIT_CYCLE[(current_unit_index + 1) % len(self.UNIT_CYCLE)]
             item["unit"] = next_unit
+            # Round to nearest ten when switching to seconds
+            if next_unit == "sec":
+                item["value"] = round(item["value"], -1)
         self._update_constraints(item)
         self._update_labels()
 
