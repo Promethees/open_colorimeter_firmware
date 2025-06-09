@@ -89,3 +89,22 @@ class Configuration(JsonSettingsFile):
     @property
     def precision(self):
         return self.data['precision']
+
+    @property
+    def timeout_value(self):
+        return self.data.get('timeout_value', constants.DEFAULT_TIMEOUT_VALUE)
+
+    @property
+    def timeout_unit(self):
+        return self.data.get('timeout_unit', constants.DEFAULT_TIMEOUT_UNIT)
+
+    @property
+    def transmission_interval_value(self):
+        return self.data.get('transmission_interval_value', constants.DEFAULT_TRANSMISSION_INTERVAL_VALUE)
+
+    @property
+    def transmission_interval_unit(self):
+        return self.data.get('transmission_interval_unit', constants.DEFAULT_TRANSMISION_INTERVAL_UNIT)
+    
+    
+    

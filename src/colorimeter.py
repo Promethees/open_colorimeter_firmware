@@ -25,18 +25,21 @@ from calibrations import CalibrationsError
 from menu_screen import MenuScreen
 from message_screen import MessageScreen
 from measure_screen import MeasureScreen
+from settings_screen import SettingsScreen
 
 class Mode:
     MEASURE = 0
     MENU    = 1
     MESSAGE = 2
     ABORT   = 3
+    SETTINGS = 4
 
 class Colorimeter:
     ABOUT_STR = 'About'
     RAW_SENSOR_STR = 'Raw Sensor'
     ABSORBANCE_STR = 'Absorbance'
     TRANSMITTANCE_STR = 'Transmittance'
+    SETTINGS_STR = 'Settings'
     DEFAULT_MEASUREMENTS = [ABSORBANCE_STR, TRANSMITTANCE_STR, RAW_SENSOR_STR]
 
     def __init__(self):
@@ -53,6 +56,8 @@ class Colorimeter:
         self.last_transmission_time = 0.0
         self.calibrations_checked = False
         self.serial_start_time = None
+        self.settings_screen = None
+        self.in_settings = False
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -106,7 +111,7 @@ class Colorimeter:
                 self.mode = Mode.MESSAGE
 
         self.menu_items.extend([k for k in self.calibrations.data])
-        self.menu_items.append(self.ABOUT_STR)
+        self.menu_items.extend([self.ABOUT_STR, self.SETTINGS_STR])
 
         # Set default/startup measurement
         if self.configuration.startup in self.menu_items:
@@ -137,10 +142,25 @@ class Colorimeter:
         self.battery_monitor = BatteryMonitor()
         self.setup_gain_and_itime_cycles()
 
+        # Initialize settings values
+        self.timeout_value = self.configuration.timeout_value
+        self.timeout_unit = self.configuration.timeout_unit
+        self.transmission_interval_value = self.configuration.transmission_interval_value
+        self.transmission_interval_unit = self.configuration.transmission_interval_unit
+
+        # validate the timings set in configuration.json
+        if self.timeout_value is not None:
+            if self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
+                self.timeout_value = constants.DEFAULT_TIMEOUT_VALUE
+                self.timeout_unit = constants.DEFAULT_TIMEOUT_UNIT
+                self.transmission_interval_value = constants.DEFAULT_TRANSMISSION_INTERVAL_VALUE
+                self.transmission_interval_unit = constants.DEFAULT_TRANSMISION_INTERVAL_UNIT
+
     def _log_error(self, message):
         """Log errors to display."""
         self.mode = Mode.MESSAGE
         self.menu_screen = None
+        self.settings_screen = None
         if self.mode == Mode.MESSAGE and self.message_screen is None:
             gc.collect()
             gc.mem_free()
@@ -186,7 +206,7 @@ class Colorimeter:
             self.menu_view_pos = self.menu_item_pos - items_per_screen + 1
 
     def update_menu_screen(self):
-        gc.collect()  # Force garbage collection before memory-intensive operation
+        gc.collect()
         n0 = self.menu_view_pos
         n1 = n0 + self.menu_screen.items_per_screen
         view_items = []
@@ -221,8 +241,6 @@ class Colorimeter:
     @property
     def raw_sensor_value(self):
         value = self.light_sensor.value
-        # Debug: Uncomment to log TSL2591 readings
-        # print(f"TSL2591 raw value: {value}")
         return value
 
     @property
@@ -322,6 +340,16 @@ class Colorimeter:
                 self.measure_screen.show()
             time.sleep(0.1)
 
+    def _convert_to_seconds(self, value, unit):
+        """Convert value to seconds for internal use."""
+        if unit == "sec":
+            return value
+        elif unit == "min":
+            return value * 60.0
+        elif unit == "hour":
+            return value * 3600.0
+        return value
+
     def blank_button_pressed(self, buttons):
         return 'blank' in buttons and not self.is_raw_sensor
 
@@ -341,10 +369,13 @@ class Colorimeter:
         return 'right' in buttons
 
     def gain_button_pressed(self, buttons):
-        return 'gain' in buttons and self.is_raw_sensor
+        if not self.in_settings:
+            return 'gain' in buttons and self.is_raw_sensor
+        else:
+            return 'gain' in buttons
 
     def itime_button_pressed(self, buttons):
-        return 'itime' in buttons and self.is_raw_sensor
+        return 'itime' in buttons
 
     def handle_button_press(self):
         pressed_buttons = set()
@@ -375,11 +406,10 @@ class Colorimeter:
             elif self.menu_button_pressed(pressed_buttons):
                 self.measure_screen.group = displayio.Group()
                 gc.collect()
-                self.menu_screen = None  # Clear reference
+                self.menu_screen = None
                 self.mode = Mode.MENU
                 self.menu_view_pos = 0
                 self.menu_item_pos = 0
-                # Create MenuScreen immediately
                 gc.collect()
                 try:
                     self.menu_screen = MenuScreen()
@@ -401,31 +431,110 @@ class Colorimeter:
                         try:
                             self.message_screen = MessageScreen()
                         except MemoryError:
-                            self._log_error("Memory allocation failed for Message Screen") 
+                            self._log_error("Memory allocation failed for Message Screen")
                     about_msg = f'firmware version {constants.__version__}'
                     self.message_screen.set_message(about_msg)
                     self.message_screen.set_to_about()
                     self.mode = Mode.MESSAGE
+                elif selected_item == self.SETTINGS_STR:
+                    self.menu_screen.group = displayio.Group()
+                    gc.collect()
+                    self.menu_screen = None
+                    self.measure_screen = None
+                    self.message_screen = None
+                    self.mode = Mode.SETTINGS
+                    self.in_settings = True
+                    gc.collect()
+                    try:
+                        self.settings_screen = SettingsScreen()
+                        self.settings_screen.set_values(
+                            self.timeout_value,
+                            self.timeout_unit,
+                            self.transmission_interval_value,
+                            self.transmission_interval_unit
+                        )
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for SettingsScreen")
                 else:
                     self.menu_screen.group = displayio.Group()
                     gc.collect()
                     self.menu_screen = None
-                    self.measure_screen = None  # Clear reference to force reinitialization
+                    self.measure_screen = None
                     self.measurement_name = self.menu_items[self.menu_item_pos]
                     self.mode = Mode.MEASURE
             elif self.up_button_pressed(pressed_buttons):
                 self.decr_menu_item_pos()
             elif self.down_button_pressed(pressed_buttons):
                 self.incr_menu_item_pos()
-            # Only update the menu screen if still in MENU mode
             if self.mode == Mode.MENU:
                 self.update_menu_screen()
 
+        elif self.mode == Mode.SETTINGS:
+            if self.menu_button_pressed(pressed_buttons):
+                values = self.settings_screen.get_values()
+                print("Values are")
+                print(values)
+                self.timeout_value = values["timeout_value"]
+                self.timeout_unit = values["timeout_unit"]
+                self.transmission_interval_value = values["interval_value"]
+                self.transmission_interval_unit = values["interval_unit"]
+                if self.timeout_value and self.timeout_unit:
+                    if self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
+                        self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
+                        self.message_screen.set_to_error()
+                        self.in_settings = False
+                        self.mode = Mode.MESSAGE
+                        self.timeout_value = values["prev_timeout_value"]
+                        self.timeout_unit = values["prev_timeout_unit"]
+                        self.transmission_interval_value = values["prev_interval_value"]
+                        self.transmission_interval_unit = values["prev_interval_unit"]
+                    else:
+                        try:
+                            self.settings_screen.group = displayio.Group()
+                            gc.collect()
+                            self.settings_screen = None
+                            gc.collect()
+                            if self.message_screen is None:
+                                gc.collect()
+                                try:
+                                    self.message_screen = MessageScreen()
+                                except MemoryError:
+                                    self._log_error("Memory allocation failed for Message Screen")
+                            self.message_screen.set_message("Settings saved.")
+                            self.message_screen.set_to_about()
+                            self.in_settings = False
+                            self.mode = Mode.MESSAGE
+                        except ConfigurationError as e:
+                            self._log_error(f"Failed to save settings: {e}")
+            elif self.left_button_pressed(pressed_buttons): # Discard the settings
+                self.settings_screen.group = displayio.Group()
+                gc.collect()
+                self.settings_screen = None
+                self.mode = Mode.MENU
+                self.in_settings = False
+                gc.collect()
+                try:
+                    self.menu_screen = MenuScreen()
+                except MemoryError:
+                    self._log_error("Memory allocation failed for MenuScreen")
+            elif self.up_button_pressed(pressed_buttons):
+                self.settings_screen.increment_value()
+            elif self.down_button_pressed(pressed_buttons):
+                self.settings_screen.decrement_value()
+            elif self.right_button_pressed(pressed_buttons):
+                self.settings_screen.move_down()
+            elif self.itime_button_pressed(pressed_buttons):
+                self.settings_screen.cycle_unit()
+            elif self.blank_button_pressed(pressed_buttons):
+                self.settings_screen.revert_to_saved()
+            elif self.gain_button_pressed(pressed_buttons):
+                self.settings_screen.set_timeout_none()
+
         elif self.mode == Mode.MESSAGE or self.mode == Mode.ABORT:
-            if pressed_buttons: # Any button pressed
+            if pressed_buttons:
                 self.message_screen = None
                 self.measure_screen = None
-                gc.collect()                
+                gc.collect()
                 self.mode = Mode.MENU
                 if self.menu_screen is None:
                     gc.collect()
@@ -461,9 +570,12 @@ class Colorimeter:
 
                         current_time = time.monotonic()
                         relative_time = current_time - self.serial_start_time
-                        if constants.TIMEOUT_IN_MINUTES and relative_time > constants.TIMEOUT_IN_MINUTES*60:
-                            self.is_talking = False
-                        if current_time - self.last_transmission_time >= constants.DATA_TRANSMISSION_INTERVAL:
+                        if timeout_value and timeout_unit:
+                            timeout_seconds = self._convert_to_seconds(self.timeout_value, self.timeout_unit)
+                            if timeout_seconds and relative_time > timeout_seconds:
+                                self.is_talking = False
+                        transmission_interval_seconds = self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit)
+                        if current_time - self.last_transmission_time >= transmission_interval_seconds:
                             self.last_transmission_time = current_time
                             blanked = "True" if self.is_blanked else "False"
                             data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag},{blanked}\n"
@@ -525,9 +637,14 @@ class Colorimeter:
 
             elif self.mode == Mode.MENU:
                 if self.menu_screen is None:
-                    continue  # MenuScreen should already be created in handle_button_press
+                    continue
                 self.update_menu_screen()
                 self.menu_screen.show()
+
+            elif self.mode == Mode.SETTINGS:
+                if self.settings_screen is None:
+                    continue
+                self.settings_screen.show()
 
             elif self.mode in (Mode.MESSAGE, Mode.ABORT):
                 self.message_screen.show()
