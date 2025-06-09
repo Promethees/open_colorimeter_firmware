@@ -472,36 +472,32 @@ class Colorimeter:
         elif self.mode == Mode.SETTINGS:
             if self.menu_button_pressed(pressed_buttons):
                 values = self.settings_screen.get_values()
-                print("Values are")
-                print(values)
                 self.timeout_value = values["timeout_value"]
                 self.timeout_unit = values["timeout_unit"]
                 self.transmission_interval_value = values["interval_value"]
                 self.transmission_interval_unit = values["interval_unit"]
                 if self.timeout_value and self.timeout_unit:
                     if self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
-                        # self.settings_screen.group = displayio.Group()
-                        # gc.collect()
-                        self.settings_screen = None
-                        gc.collect()
-                        if self.message_screen is None:
-                                gc.collect()
-                                try:
-                                    self.message_screen = MessageScreen()
-                                except MemoryError:
-                                    self._log_error("Memory allocation failed for Message Screen")
-                        self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
-                        self.message_screen.set_to_error()
-                        self.in_settings = False
-                        self.mode = Mode.MESSAGE
                         self.timeout_value = values["prev_timeout_value"]
                         self.timeout_unit = values["prev_timeout_unit"]
                         self.transmission_interval_value = values["prev_interval_value"]
                         self.transmission_interval_unit = values["prev_interval_unit"]
+                        self.settings_screen = None
+                        values = None
+                        gc.collect()
+                        if self.message_screen is None:
+                            gc.collect()
+                            try:
+                                self.message_screen = MessageScreen()
+                            except MemoryError:
+                                self._log_error("Memory allocation failed for Message Screen")
+                        self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
+                        self.message_screen.set_to_error()
+                        self.in_settings = False
+                        self.mode = Mode.MESSAGE
+                        
                     else:
                         try:
-                            # self.settings_screen.group = displayio.Group()
-                            # gc.collect()
                             self.settings_screen = None
                             gc.collect()
                             if self.message_screen is None:
@@ -529,16 +525,22 @@ class Colorimeter:
                     self._log_error("Memory allocation failed for MenuScreen")
             elif self.up_button_pressed(pressed_buttons):
                 self.settings_screen.increment_value()
+                gc.mem_free()
             elif self.down_button_pressed(pressed_buttons):
                 self.settings_screen.decrement_value()
+                gc.mem_free()
             elif self.right_button_pressed(pressed_buttons):
                 self.settings_screen.move_down()
+                gc.mem_free()
             elif self.itime_button_pressed(pressed_buttons):
                 self.settings_screen.cycle_unit()
+                gc.mem_free()
             elif self.blank_button_pressed(pressed_buttons):
                 self.settings_screen.revert_to_saved()
+                gc.mem_free()
             elif self.gain_button_pressed(pressed_buttons):
                 self.settings_screen.set_timeout_none()
+                gc.mem_free()
 
         elif self.mode == Mode.MESSAGE or self.mode == Mode.ABORT:
             if pressed_buttons:

@@ -115,8 +115,8 @@ class SettingsScreen:
     def _update_labels(self):
         """Update text and colors of setting labels."""
         for i, item in enumerate(self.items):
-            print(f"The {i} item is:")
-            print(item)
+            # print(f"The {i} item is:")
+            # print(item)
             if item["name"] == "Timeout" and (item["value"] is None or item["unit"] is None):
                 text = f"{item['name']}: Infinite"
             else:
