@@ -200,10 +200,9 @@ class SettingsScreen:
         self._update_labels()
 
     def revert_to_saved(self):
-        """Revert the current item to its saved value and unit."""
-        item = self.items[self.current_item]
-        item["value"] = item["saved_value"]
-        item["unit"] = item["saved_unit"]
+        for item in self.items:
+            item["value"] = item["saved_value"]
+            item["unit"] = item["saved_unit"]
         self._update_constraints(item)
         self._update_labels()
 
