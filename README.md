@@ -48,11 +48,24 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 * How should it look like <img src="/images/Measure.jpeg" width="100">.
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!. WARNING: The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
-- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it <img src="/images/sendingmsgs.gif" width="200">, but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
-- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
+	- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it <img src="/images/sendingmsgs.gif" width="200">, but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
+	- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
 
 ### Message
 * Has two forms, About <img src="/images/About.jpeg" width="100"> and Error <img src="/images/Error.jpeg" width="100">. Press any button to get back to Menu mode.
+
+### Settings
+* Usage: to set timeout period for data collection as well as sampling rate.
+* Values: can be initialized by configuration.json: [](/images/config.png), else will be set by default values in `constants.py` [](/images/DefaultTimings.png)
+* Accessible as he last menu item. Layout: [](/images/TimingSettings.jpeg). Yellow line is the currently chosen values to get modified
+* Buttons: 
+	- `Right`: Switching between 2 selected lines of modification
+	- `Up/Down`: Increase/Decrease the value of the current line (for units `min`, `hour`, step is 1; for `sec`, step is 10)
+	- `Left`: Discard changes made, get back to Menu 
+	- `Menu`: Save the changes made, validate values set
+	- `Blank`: Discard all the changes made, remain in Settings
+	- `A`: Change the units of the selected line
+	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 Data recorded will be saved in `\data` folder by default
