@@ -476,42 +476,40 @@ class Colorimeter:
                 self.timeout_unit = values["timeout_unit"]
                 self.transmission_interval_value = values["interval_value"]
                 self.transmission_interval_unit = values["interval_unit"]
-                if self.timeout_value and self.timeout_unit:
-                    if self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
-                        self.timeout_value = values["prev_timeout_value"]
-                        self.timeout_unit = values["prev_timeout_unit"]
-                        self.transmission_interval_value = values["prev_interval_value"]
-                        self.transmission_interval_unit = values["prev_interval_unit"]
-                        self.settings_screen = None
-                        values = None
+                if self.timeout_value and self._convert_to_seconds(self.timeout_value, self.timeout_unit) <= self._convert_to_seconds(self.transmission_interval_value, self.transmission_interval_unit):
+                    self.timeout_value = values["prev_timeout_value"]
+                    self.timeout_unit = values["prev_timeout_unit"]
+                    self.transmission_interval_value = values["prev_interval_value"]
+                    self.transmission_interval_unit = values["prev_interval_unit"]
+                    self.settings_screen = None
+                    values = None
+                    gc.collect()
+                    if self.message_screen is None:
                         gc.collect()
-                        if self.message_screen is None:
-                            gc.collect()
-                            try:
-                                self.message_screen = MessageScreen()
-                            except MemoryError:
-                                self._log_error("Memory allocation failed for Message Screen")
-                        self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
-                        self.message_screen.set_to_error()
-                        self.in_settings = False
-                        self.mode = Mode.MESSAGE
-                        
-                    else:
                         try:
-                            self.settings_screen = None
-                            gc.collect()
-                            if self.message_screen is None:
-                                gc.collect()
-                                try:
-                                    self.message_screen = MessageScreen()
-                                except MemoryError:
-                                    self._log_error("Memory allocation failed for Message Screen")
-                            self.message_screen.set_message("Settings saved.")
-                            self.message_screen.set_to_about()
-                            self.in_settings = False
-                            self.mode = Mode.MESSAGE
-                        except ConfigurationError as e:
-                            self._log_error(f"Failed to save settings: {e}")
+                            self.message_screen = MessageScreen()
+                        except MemoryError:
+                            self._log_error("Memory allocation failed for Message Screen")
+                    self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
+                    self.message_screen.set_to_error()
+                    self.in_settings = False
+                    self.mode = Mode.MESSAGE
+                    return         
+                try:
+                    self.settings_screen = None
+                    gc.collect()
+                    if self.message_screen is None:
+                        gc.collect()
+                        try:
+                            self.message_screen = MessageScreen()
+                        except MemoryError:
+                            self._log_error("Memory allocation failed for Message Screen")
+                    self.message_screen.set_message("Settings saved.")
+                    self.message_screen.set_to_about()
+                    self.in_settings = False
+                    self.mode = Mode.MESSAGE
+                except ConfigurationError as e:
+                    self._log_error(f"Failed to save settings: {e}")
             elif self.left_button_pressed(pressed_buttons): # Discard the settings
                 self.settings_screen.group = displayio.Group()
                 gc.collect()
