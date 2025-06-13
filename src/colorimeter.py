@@ -485,7 +485,6 @@ class Colorimeter:
                     values = None
                     gc.collect()
                     if self.message_screen is None:
-                        gc.collect()
                         try:
                             self.message_screen = MessageScreen()
                         except MemoryError:
@@ -499,8 +498,8 @@ class Colorimeter:
                     self.settings_screen = None
                     gc.collect()
                     if self.message_screen is None:
-                        gc.collect()
                         try:
+                            print("Message screen created!")
                             self.message_screen = MessageScreen()
                         except MemoryError:
                             self._log_error("Memory allocation failed for Message Screen")
