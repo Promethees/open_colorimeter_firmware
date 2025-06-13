@@ -1,11 +1,3 @@
-<style>
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 1; }
-}
-</style>
-
 # Open Colorimeter Firmware for Easy Sensor for colorimetric assay 
 
 ![alt text](/images/open_colorimeter.png)
@@ -56,7 +48,7 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 * How should it look like <img src="/images/Measure.jpeg" width="100">.
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!. 
-* <span style="font-size: 24px; color: red; font-weight: bold; animation: blink 1s infinite;">**IMPORTANT WARNING!!!**</span>: The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
+* <img src="images/warning.svg" alt="IMPORTANT WARNING!!!">: The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
 	- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it <img src="/images/sendingmsgs.gif" width="200">, but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
 	- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
 
