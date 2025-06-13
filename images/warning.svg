@@ -1,5 +1,5 @@
 <svg fill="none" viewBox="0 0 600 30" width="600" height="30" xmlns="http://www.w3.org/2000/svg">
-  <foreignObject width="100%" height="10%">
+  <foreignObject width="100%" height="100%">
     <div xmlns="http://www.w3.org/1999/xhtml">
       <style>
         .styled-text {
@@ -7,6 +7,8 @@
           color: red;
           font-weight: bold;
           animation: blink 1s infinite;
+          margin: 0;
+          line-height: 1;
         }
         @keyframes blink {
           0% { opacity: 1; }
