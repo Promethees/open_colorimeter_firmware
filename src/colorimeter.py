@@ -438,7 +438,6 @@ class Colorimeter:
                     self.mode = Mode.MESSAGE
                 elif selected_item == self.SETTINGS_STR:
                     self.menu_screen.group = displayio.Group()
-                    gc.collect()
                     self.menu_screen = None
                     self.measure_screen = None
                     self.message_screen = None
@@ -511,7 +510,6 @@ class Colorimeter:
                     self._log_error(f"Failed to save settings: {e}")
             elif self.left_button_pressed(pressed_buttons): # Discard the settings
                 self.settings_screen.group = displayio.Group()
-                gc.collect()
                 self.settings_screen = None
                 self.mode = Mode.MENU
                 self.in_settings = False
@@ -543,10 +541,8 @@ class Colorimeter:
             if pressed_buttons:
                 self.message_screen = None
                 self.measure_screen = None
-                gc.collect()
                 self.mode = Mode.MENU
                 if self.menu_screen is None:
-                    gc.collect()
                     try:
                         self.menu_screen = MenuScreen()
                     except MemoryError:
