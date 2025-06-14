@@ -26,6 +26,7 @@ from menu_screen import MenuScreen
 from message_screen import MessageScreen
 from measure_screen import MeasureScreen
 from settings_screen import SettingsScreen
+from concentration_screen import ConcentrationScreen
 
 class Mode:
     MEASURE = 0
@@ -33,6 +34,7 @@ class Mode:
     MESSAGE = 2
     ABORT   = 3
     SETTINGS = 4
+    CONCENTRATION = 5
 
 class Colorimeter:
     ABOUT_STR = 'About'
@@ -40,6 +42,7 @@ class Colorimeter:
     ABSORBANCE_STR = 'Absorbance'
     TRANSMITTANCE_STR = 'Transmittance'
     SETTINGS_STR = 'Settings'
+    CONCENTRATION_STR = 'Concentration'
     DEFAULT_MEASUREMENTS = [ABSORBANCE_STR, TRANSMITTANCE_STR, RAW_SENSOR_STR]
 
     def __init__(self):
@@ -57,7 +60,9 @@ class Colorimeter:
         self.calibrations_checked = False
         self.serial_start_time = None
         self.settings_screen = None
-        self.in_settings = False
+        self.to_use_gain_asB = False
+        self.concentration = None
+        
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -111,7 +116,7 @@ class Colorimeter:
                 self.mode = Mode.MESSAGE
 
         self.menu_items.extend([k for k in self.calibrations.data])
-        self.menu_items.extend([self.ABOUT_STR, self.SETTINGS_STR])
+        self.menu_items.extend([self.CONCENTRATION_STR, self.ABOUT_STR, self.SETTINGS_STR])
 
         # Set default/startup measurement
         if self.configuration.startup in self.menu_items:
@@ -326,7 +331,7 @@ class Colorimeter:
 
         self.measure_screen.set_measurement(self.measurement_name, None, "comm init", None, talking=self.is_talking)
         self.measure_screen.show()
-        self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked\n")
+        self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
 
         if self.serial_start_time is None:
             self.serial_start_time = time.monotonic() + constants.CONNECTION_WAIT_TIME
@@ -369,7 +374,7 @@ class Colorimeter:
         return 'right' in buttons
 
     def gain_button_pressed(self, buttons):
-        if not self.in_settings:
+        if not self.to_use_gain_asB:
             return 'gain' in buttons and self.is_raw_sensor
         else:
             return 'gain' in buttons
@@ -442,7 +447,7 @@ class Colorimeter:
                     self.measure_screen = None
                     self.message_screen = None
                     self.mode = Mode.SETTINGS
-                    self.in_settings = True
+                    self.to_use_gain_asB = True
                     gc.collect()
                     try:
                         self.settings_screen = SettingsScreen()
@@ -454,6 +459,20 @@ class Colorimeter:
                         )
                     except MemoryError:
                         self._log_error("Memory allocation failed for SettingsScreen")
+
+                elif selected_item == self.CONCENTRATION_STR:
+                    self.menu_screen.group = displayio.Group()
+                    self.menu_screen = None
+                    self.measure_screen = None
+                    self.message_screen = None
+                    self.mode = Mode.CONCENTRATION
+                    self.to_use_gain_asB = True
+                    gc.collect()
+                    try:
+                        self.concentration_screen = ConcentrationScreen()
+                    except MemoryError:
+                        self._log_error("Memory allocation failed for Concentration Screen")
+
                 else:
                     self.menu_screen.group = displayio.Group()
                     gc.collect()
@@ -486,13 +505,13 @@ class Colorimeter:
                     if self.message_screen is None:
                         try:
                             self.message_screen = MessageScreen()
+                            self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
+                            self.message_screen.set_to_error()
+                            self.to_use_gain_asB = False
+                            self.mode = Mode.MESSAGE
+                            return 
                         except MemoryError:
-                            self._log_error("Memory allocation failed for Message Screen")
-                    self.message_screen.set_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
-                    self.message_screen.set_to_error()
-                    self.in_settings = False
-                    self.mode = Mode.MESSAGE
-                    return         
+                            self._log_error("Memory allocation failed for Message Screen")              
                 try:
                     self.settings_screen = None
                     gc.collect()
@@ -500,19 +519,19 @@ class Colorimeter:
                         try:
                             print("Message screen created!")
                             self.message_screen = MessageScreen()
+                            self.message_screen.set_message("Settings saved.")
+                            self.message_screen.set_to_about()
+                            self.to_use_gain_asB = False
+                            self.mode = Mode.MESSAGE
                         except MemoryError:
                             self._log_error("Memory allocation failed for Message Screen")
-                    self.message_screen.set_message("Settings saved.")
-                    self.message_screen.set_to_about()
-                    self.in_settings = False
-                    self.mode = Mode.MESSAGE
                 except ConfigurationError as e:
                     self._log_error(f"Failed to save settings: {e}")
             elif self.left_button_pressed(pressed_buttons): # Discard the settings
                 self.settings_screen.group = displayio.Group()
                 self.settings_screen = None
                 self.mode = Mode.MENU
-                self.in_settings = False
+                self.to_use_gain_asB = False
                 gc.collect()
                 try:
                     self.menu_screen = MenuScreen()
@@ -536,6 +555,36 @@ class Colorimeter:
             elif self.gain_button_pressed(pressed_buttons):
                 self.settings_screen.set_timeout_none()
                 gc.mem_free()
+
+        elif self.mode == Mode.CONCENTRATION:
+            if self.menu_button_pressed(pressed_buttons):
+                self.concentration = self.concentration_screen.concen_val
+                self.mode = Mode.MESSAGE
+                self.concentration_screen.group = displayio.Group()
+                self.concentration_screen = None
+                gc.collect()
+                try:
+                    self.message_screen = MessageScreen()
+                    msg = "Concen val is " + str(self.concentration) + " nM/l"
+                    self.message_screen.set_message(msg)
+                    self.message_screen.set_to_about()
+                except MemoryError:
+                    self._log_error("Memory allocation failed for MessageScreen")
+
+            elif self.blank_button_pressed(pressed_buttons):
+                self.concentration_screen.set_to_zero()
+            elif self.up_button_pressed(pressed_buttons):
+                self.concentration_screen.add(1)
+            elif self.down_button_pressed(pressed_buttons):
+                self.concentration_screen.add(-1)
+            elif self.left_button_pressed(pressed_buttons):
+                self.concentration_screen.add(-10)
+            elif self.right_button_pressed(pressed_buttons):
+                self.concentration_screen.add(10)
+            elif self.itime_button_pressed(pressed_buttons):
+                self.concentration_screen.add(100)
+            elif self.gain_button_pressed(pressed_buttons):
+                self.concentration_screen.add(-100)
 
         elif self.mode == Mode.MESSAGE or self.mode == Mode.ABORT:
             if pressed_buttons:
@@ -572,6 +621,7 @@ class Colorimeter:
                         numeric_value, type_tag = self.measurement_value
                         units = self.measurement_units or "None"
                         type_tag = type_tag or "None"
+                        concen_val = self.concentration or "None"
 
                         current_time = time.monotonic()
                         relative_time = current_time - self.serial_start_time
@@ -583,7 +633,7 @@ class Colorimeter:
                         if current_time - self.last_transmission_time >= transmission_interval_seconds:
                             self.last_transmission_time = current_time
                             blanked = "True" if self.is_blanked else "False"
-                            data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag},{blanked}\n"
+                            data_str = f"{relative_time:.2f},{self.measurement_name},{numeric_value:.2f},{units},{type_tag},{blanked},{concen_val}\n"
                             self.layout.write(data_str)
                         self.measure_screen.set_measurement(
                             self.measurement_name,
@@ -594,7 +644,7 @@ class Colorimeter:
                             talking=self.is_talking
                         )
                     except MemoryError:
-                        self._log_error("Memory allocation failed for MenuScreen")
+                        self._log_error("Memory allocation failed for Measure Screen")
                     except (ValueError, RuntimeError) as e:
                         self._log_error(f"HID send error: {e}")
                         self.is_talking = False
@@ -614,7 +664,7 @@ class Colorimeter:
                             talking=self.is_talking
                         )
                     except MemoryError:
-                        self._log_error("Memory allocation failed for MenuScreen")
+                        self._log_error("Memory allocation failed for Measure Screen")
                     except LightSensorOverflow:
                         self.measure_screen.set_measurement(self.measurement_name, None, "overflow", None)
 
@@ -624,7 +674,7 @@ class Colorimeter:
                         self.measure_screen.set_gain(self.light_sensor.gain)
                         self.measure_screen.set_integration_time(self.light_sensor.integration_time)
                     except MemoryError:
-                        self._log_error("Memory allocation failed for MenuScreen")
+                        self._log_error("Memory allocation failed for Measure Screen")
                 else:
                     try:
                         if self.is_blanked:
@@ -634,7 +684,7 @@ class Colorimeter:
                         self.measure_screen.clear_gain()
                         self.measure_screen.clear_integration_time()
                     except MemoryError:
-                        self._log_error("Memory allocation failed for MenuScreen")
+                        self._log_error("Memory allocation failed for Measure Screen")
 
                 self.battery_monitor.update()
                 self.measure_screen.set_bat(self.battery_monitor.voltage_lowpass)
@@ -650,6 +700,11 @@ class Colorimeter:
                 if self.settings_screen is None:
                     continue
                 self.settings_screen.show()
+
+            elif self.mode == Mode.CONCENTRATION:
+                if self.concentration_screen is None:
+                    continue
+                self.concentration_screen.show()
 
             elif self.mode in (Mode.MESSAGE, Mode.ABORT):
                 self.message_screen.show()

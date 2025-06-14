@@ -38,7 +38,7 @@ class HIDDataCollector:
         self.output_file = None
         self.running = True
         self.buffer = ""
-        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNIT,TYPE,BLANKED\n$"
+        self.header_pattern = r"^TIMESTAMP,MEASUREMENT,VALUE,UNIT,TYPE,BLANKED,CONCENTRATION\n$"
         self.data_pattern = r"^\d+\.\d{1,2},[A-Za-z]+,\d+\.\d{1,2},[A-Za-z]+,[A-Za-z]+,[A-Za-z]+\n$"
         self.session_started = False
 
@@ -95,8 +95,8 @@ class HIDDataCollector:
 
     def process_data(self, data):
         try:
-            timestamp, measurement_name, value, units, type_tag, blanked = data.strip().split(',')
-            print(f"Received: Timestamp: {timestamp}s, Measurement: {measurement_name}, Value: {value} {units}, Type: {type_tag}, Blanked: {blanked}")
+            timestamp, measurement_name, value, units, type_tag, blanked, concen = data.strip().split(',')
+            print(f"Received: Timestamp: {timestamp}s, Measurement: {measurement_name}, Value: {value} {units}, Type: {type_tag}, Blanked: {blanked}, Concentration: {concen}")
             with open(self.output_file, "a") as f:
                 f.write(data)
         except ValueError as e:
