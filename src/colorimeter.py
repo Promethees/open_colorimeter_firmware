@@ -166,16 +166,15 @@ class Colorimeter:
         self.mode = Mode.MESSAGE
         self.menu_screen = None
         self.settings_screen = None
+        gc.collect()
         if self.mode == Mode.MESSAGE and self.message_screen is None:
-            gc.collect()
-            gc.mem_free()
             try:
                 self.message_screen = MessageScreen()
             except MemoryError:
                 self._log_error("Memory allocation failed for Message Screen")        
         self.message_screen.set_message(f"Error: {message}")
         self.message_screen.set_to_error()
-        gc.collect()
+        
 
     def setup_gain_and_itime_cycles(self):
         self.gain_cycle = adafruit_itertools.cycle(constants.GAIN_TO_STR)
@@ -211,7 +210,6 @@ class Colorimeter:
             self.menu_view_pos = self.menu_item_pos - items_per_screen + 1
 
     def update_menu_screen(self):
-        gc.collect()
         n0 = self.menu_view_pos
         n1 = n0 + self.menu_screen.items_per_screen
         view_items = []
@@ -410,7 +408,6 @@ class Colorimeter:
                 self.serial_talking(set_talking=not self.is_talking)
             elif self.menu_button_pressed(pressed_buttons):
                 self.measure_screen.group = displayio.Group()
-                gc.collect()
                 self.menu_screen = None
                 self.mode = Mode.MENU
                 self.menu_view_pos = 0
@@ -432,7 +429,6 @@ class Colorimeter:
                 selected_item = self.menu_items[self.menu_item_pos]
                 if selected_item == self.ABOUT_STR:
                     if self.message_screen is None:
-                        gc.collect()
                         try:
                             self.message_screen = MessageScreen()
                         except MemoryError:
@@ -475,11 +471,11 @@ class Colorimeter:
 
                 else:
                     self.menu_screen.group = displayio.Group()
-                    gc.collect()
                     self.menu_screen = None
                     self.measure_screen = None
                     self.measurement_name = self.menu_items[self.menu_item_pos]
                     self.mode = Mode.MEASURE
+                    gc.collect()
             elif self.up_button_pressed(pressed_buttons):
                 self.decr_menu_item_pos()
             elif self.down_button_pressed(pressed_buttons):
@@ -611,7 +607,6 @@ class Colorimeter:
             self.handle_button_press()
             if self.mode == Mode.MEASURE:
                 if self.measure_screen is None:
-                    gc.collect()
                     try:
                         self.measure_screen = MeasureScreen()
                     except MemoryError:
