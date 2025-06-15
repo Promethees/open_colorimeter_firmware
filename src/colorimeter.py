@@ -513,6 +513,7 @@ class Colorimeter:
                         except MemoryError:
                             self._log_error("Memory allocation failed for Message Screen")              
                 try:
+                    self.settings_screen.group = displayio.Group()
                     self.settings_screen = None
                     gc.collect()
                     if self.message_screen is None:
@@ -539,22 +540,22 @@ class Colorimeter:
                     self._log_error("Memory allocation failed for MenuScreen")
             elif self.up_button_pressed(pressed_buttons):
                 self.settings_screen.increment_value()
-                gc.mem_free()
+                # gc.mem_free()
             elif self.down_button_pressed(pressed_buttons):
                 self.settings_screen.decrement_value()
-                gc.mem_free()
+                # gc.mem_free()
             elif self.right_button_pressed(pressed_buttons):
                 self.settings_screen.move_down()
-                gc.mem_free()
+                # gc.mem_free()
             elif self.itime_button_pressed(pressed_buttons):
                 self.settings_screen.cycle_unit()
-                gc.mem_free()
+                # gc.mem_free()
             elif self.blank_button_pressed(pressed_buttons):
                 self.settings_screen.revert_to_saved()
-                gc.mem_free()
+                # gc.mem_free()
             elif self.gain_button_pressed(pressed_buttons):
                 self.settings_screen.set_timeout_none()
-                gc.mem_free()
+                # gc.mem_free()
 
         elif self.mode == Mode.CONCENTRATION:
             if self.menu_button_pressed(pressed_buttons):
