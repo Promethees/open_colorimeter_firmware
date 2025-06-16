@@ -52,6 +52,7 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 <img src="images/warning.svg" alt="IMPORTANT WARNING!!!">
 
 * The mechanism of sending message from the Colorimeter (Adafruit PyBadge) to the host computer is akin to having a ***keyboard*** typing to your computer. To read the data sent, we either do:
+	- **Recommended**: Navigate to [Web interface](https://github.com/Promethees/microalbumin-Flask/blob/main/README.md) instruction to run **log_hid_data.py** for more details.
 	- If you wish to read the raw data sent by the PyBadge, please create a text file with the active cursor in it <img src="/images/sendingmsgs.gif" width="200">, but your computer is now "controlled" by the PyBadge unless you stop the Message sending by clicking the Left button again.
 	- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
 
