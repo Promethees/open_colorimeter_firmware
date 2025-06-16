@@ -72,7 +72,8 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
-Data recorded will be saved in `\data` folder by default
+* Data recorded will be saved in `\data` folder by default
+* Now is available to execute on the web interface so this step becomes ***optional***
 
 ### MacOS
 * Compile the code by: `chmod +x log_hid_data.py`, then run with administrator right (important!) 
