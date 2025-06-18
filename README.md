@@ -15,8 +15,6 @@ This document provides details of our solution for a low-cost, handy colorimetri
 * adafruit_display_shapes
 * adatfruit_itertools
 
-Copy [lib.zip](https://github.com/Promethees/open_colorimeter_firmware/blob/main/lib.zip) to ***CIRCUITPY*** Drive and unzip to get the dependencies.
-
 ## Requirements (Hosting System)
  * python 3
  * hidapi
@@ -29,6 +27,8 @@ your feather development board.
 * Copy `assets` folder to the ***CIRCUITPY*** drive
 
 * Copy `configuration.json`, `calibrations.json` to ***CIRCUITPY*** drive
+
+* Copy [lib.zip](https://github.com/Promethees/open_colorimeter_firmware/blob/main/lib.zip) to ***CIRCUITPY*** Drive and unzip to get the dependencies. Note: should only have one layer of `\lib` directory (in case after unzipping, you have something like `\lib\lib`)
 
 ## Installation (Hosting System)
 
