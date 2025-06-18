@@ -114,7 +114,7 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 * In case you have any issue with the **CIRCUITPY** drive (either it's no writtable or not found), you might want to backup data somewhere else.
 Then do the following steps:
 
-- Double click on **Reset** button to enter boot mode
+- Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode <img src="/images/Pybadgeboot.jpeg" width="100">.
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
 - The display on the Colorimeter should be blank now, double click **Reset** to enter boot mode with ***PYTHONBADGE*** again. Drag `circuitpython 9.uf2` to this drive.
 - This process helps reset the Drive to default mode (please don't get caught by surprise when you see ***CIRCUITPY*** is now cleaned as new)
