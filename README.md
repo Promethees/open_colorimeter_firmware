@@ -109,6 +109,8 @@ This helps install `homebrew`, `python`, `pip`, `hidapi`.
 * Then, you can use `usb_hid` as usual
 
 ## Debug (Adafruit PyBadge)
+<img src="images/warning.svg" alt="IMPORTANT WARNING!!!">
+
 * In case you have any issue with the **CIRCUITPY** drive (either it's no writtable or not found), you might want to backup data somewhere else.
 Then do the following steps:
 
