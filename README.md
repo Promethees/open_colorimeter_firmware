@@ -118,5 +118,5 @@ Then do the following steps:
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
 - The display on the Colorimeter should be blank now, double click **Reset** to enter boot mode with ***PYTHONBADGE*** again. Drag `circuitpython 9.uf2` to this drive.
 - This process helps reset the Drive to default mode (please don't get caught by surprise when you see ***CIRCUITPY*** is now cleaned as new)
-- Go back to [Installation](#navigation-adafruit-pybadge) to get the latest code uploaded.
+- Go back to [Installation](#installation-adafruit-pybadge) to get the latest code uploaded.
 
