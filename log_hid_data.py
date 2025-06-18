@@ -123,13 +123,21 @@ class HIDDataCollector:
 
         print(f"Found PyBadge: {device_info['product_string']} (VID: {hex(device_info['vendor_id'])}, PID: {hex(device_info['product_id'])})")
 
-        device = hid.Device(PYBADGE_VID, PYBADGE_PID)
+        try:
+            device = hid.device(PYBADGE_VID, PYBADGE_PID)
+            device.open(PYBADGE_VID, PYBADGE_PID)
+        except AttributeError:
+            device = hid.Device(PYBADGE_VID, PYBADGE_PID)
         try:
             print("Reading HID reports. Press Ctrl+C to stop.")
             last_report = None
 
             while self.running:
-                report = device.read(REPORT_LENGTH, timeout=5000)
+                try:
+                    report = device.read(REPORT_LENGTH, timeout_ms=5000)
+                except:
+                    report = device.read(REPORT_LENGTH, timeout=5000)
+
                 if report:
                     timestamp = time.time()
                     keys = self.decode_report(report)
