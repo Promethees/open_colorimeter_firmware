@@ -90,7 +90,7 @@ class HIDDataCollector:
         self.output_file = self.get_next_filename()
         os.makedirs(self.base_dir, exist_ok=True)
         with open(self.output_file, "w") as f:
-            f.write("Timestamp,Measurement,Value,Unit,Type,Blanked\n")
+            f.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
         print(f"New session started. Header written to {self.output_file}")
 
     def process_data(self, data):
