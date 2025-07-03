@@ -96,11 +96,11 @@ class ButtonHandler:
             self.colorimeter.serial_manager.serial_talking(not self.colorimeter.is_talking)
         elif self.menu_button_pressed(buttons):
             self.colorimeter.screen_manager.clear_measure_screen()
-            self.colorimeter.mode = Mode.MENU
             self.colorimeter.menu_view_pos = 0
             self.colorimeter.menu_item_pos = 0
             gc.collect()
             self.colorimeter.screen_manager.init_menu_screen()
+            self.colorimeter.mode = Mode.MENU
         elif self.gain_button_pressed(buttons):
             self.colorimeter.light_sensor.gain = next(self.colorimeter.gain_cycle)
             self.colorimeter.is_blanked = False
@@ -116,21 +116,22 @@ class ButtonHandler:
                 self.colorimeter.mode = Mode.MESSAGE
             elif selected_item == self.colorimeter.SETTINGS_STR:
                 self.colorimeter.screen_manager.clear_menu_screen()
-                self.colorimeter.mode = Mode.SETTINGS
                 self.colorimeter.to_use_gain_asB = True
                 gc.collect()
                 self.colorimeter.screen_manager.init_settings_screen()
+                self.colorimeter.mode = Mode.SETTINGS
             elif selected_item == self.colorimeter.CONCENTRATION_STR:
                 self.colorimeter.screen_manager.clear_menu_screen()
-                self.colorimeter.mode = Mode.CONCENTRATION
                 self.colorimeter.to_use_gain_asB = True
                 gc.collect()
                 self.colorimeter.screen_manager.init_concentration_screen()
+                self.colorimeter.mode = Mode.CONCENTRATION
             else:
+                self.colorimeter.mode = Mode.MEASURE
                 self.colorimeter.screen_manager.clear_menu_screen()
                 self.colorimeter.measurement_name = self.colorimeter.menu_items[self.colorimeter.menu_item_pos]
-                self.colorimeter.mode = Mode.MEASURE
                 gc.collect()
+                self.colorimeter.to_use_gain_asB = True
         elif self.up_button_pressed(buttons):
             self.decr_menu_item_pos()
         elif self.down_button_pressed(buttons):
@@ -138,6 +139,7 @@ class ButtonHandler:
 
     def _handle_settings_mode(self, buttons):
         if self.menu_button_pressed(buttons):
+            self.colorimeter.mode = Mode.MESSAGE
             values = self.colorimeter.screen_manager.get_settings_values()
             self.colorimeter.timeout_value = values["timeout_value"]
             self.colorimeter.timeout_unit = values["timeout_unit"]
@@ -151,18 +153,17 @@ class ButtonHandler:
                 self.colorimeter.screen_manager.clear_settings_screen()
                 self.colorimeter.screen_manager.set_error_message("Invalid timing values! Timeout is smaller than interval time. Discard!")
                 self.colorimeter.to_use_gain_asB = False
-                self.colorimeter.mode = Mode.MESSAGE
                 return
             try:
                 self.colorimeter.screen_manager.clear_settings_screen()
                 self.colorimeter.screen_manager.show_message("Settings saved.", is_error=False)
                 self.colorimeter.to_use_gain_asB = False
-                self.colorimeter.mode = Mode.MESSAGE
-            except ConfigurationError as e:
-                self.colorimeter.screen_manager.set_error_message(f"Failed to save settings: {e}")
+            except MemoryError:
+                self.colorimeter.screen_manager.set_error_message("Memory allocation failed for message Screen")
+
         elif self.left_button_pressed(buttons):
-            self.colorimeter.screen_manager.clear_settings_screen()
             self.colorimeter.mode = Mode.MENU
+            self.colorimeter.screen_manager.clear_settings_screen()            
             self.colorimeter.to_use_gain_asB = False
             gc.collect()
             self.colorimeter.screen_manager.init_menu_screen()
@@ -182,10 +183,13 @@ class ButtonHandler:
     def _handle_concentration_mode(self, buttons):
         if self.menu_button_pressed(buttons):
             self.colorimeter.concentration = self.colorimeter.screen_manager.get_concentration_value()
-            self.colorimeter.mode = Mode.MESSAGE
             self.colorimeter.screen_manager.clear_concentration_screen()
-            msg = f"Concen val is {self.colorimeter.concentration} nM/l"
-            self.colorimeter.screen_manager.show_message(msg, is_error=False)
+            try:
+                msg = f"Concen val is {self.colorimeter.concentration} nM/l"
+                self.colorimeter.screen_manager.show_message(msg, is_error=False)
+                self.colorimeter.to_use_gain_asB = False
+            except MemoryError:
+                self.colorimeter.screen_manager.set_error_message("Memory allocation failed for message Screen")                
         elif self.blank_button_pressed(buttons):
             self.colorimeter.screen_manager.set_concentration_to_zero()
         elif self.up_button_pressed(buttons):

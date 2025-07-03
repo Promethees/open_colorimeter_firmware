@@ -5,32 +5,45 @@ from message_screen import MessageScreen
 from measure_screen import MeasureScreen
 from settings_screen import SettingsScreen
 from concentration_screen import ConcentrationScreen
+from light_sensor import LightSensorOverflow
 from mode import Mode
 
 class ScreenManager:
     def __init__(self, colorimeter):
         self.colorimeter = colorimeter
         self.measure_screen = MeasureScreen()
-        self.message_screen = MessageScreen()
+        self.message_screen = None
         self.menu_screen = None
         self.settings_screen = None
         self.concentration_screen = None
 
     def set_error_message(self, message):
-        if self.colorimeter.mode == Mode.MESSAGE and self.message_screen is None:
-            try:
-                self.message_screen = MessageScreen()
-            except MemoryError:
-                self.set_error_message("Memory allocation failed for Message Screen")
-                return
+        self.colorimeter.mode = Mode.MESSAGE
+        self.clear_measure_screen()
+        self.clear_menu_screen()
+        self.clear_settings_screen()
+        self.clear_concentration_screen()
+        if self.message_screen is None:
+            self.message_screen = MessageScreen()
         self.message_screen.set_message(f"Error: {message}")
         self.message_screen.set_to_error()
 
     def set_abort_message(self, message):
+        self.colorimeter.mode = Mode.MESSAGE
+        if self.message_screen is None:
+            self.clear_measure_screen()
+            self.clear_menu_screen()
+            self.clear_settings_screen()
+            self.message_screen = MessageScreen()
         self.message_screen.set_message(message, ok_to_continue=False)
         self.message_screen.set_to_abort()
 
     def show_message(self, message, is_error=False):
+        self.colorimeter.mode = Mode.MESSAGE
+        self.clear_measure_screen()
+        self.clear_menu_screen()
+        self.clear_settings_screen()
+        self.clear_concentration_screen()
         if self.message_screen is None:
             try:
                 self.message_screen = MessageScreen()
@@ -74,14 +87,15 @@ class ScreenManager:
 
     def init_concentration_screen(self):
         try:
-            self.concentration_screen = ConcentrationScreen()
+            print(f"current concentration is {self.colorimeter.concentration}")
+            self.concentration_screen = ConcentrationScreen(self.colorimeter.concentration)
         except MemoryError:
             self.set_error_message("Memory allocation failed for Concentration Screen")
 
     def clear_measure_screen(self):
-        self.measure_screen.group = displayio.Group()
-        self.measure_screen = None
-        self.message_screen = None
+        if self.measure_screen:
+            self.measure_screen.group = displayio.Group()
+        
         gc.collect()
 
     def clear_menu_screen(self):
@@ -89,7 +103,6 @@ class ScreenManager:
             self.menu_screen.group = displayio.Group()
             self.menu_screen = None
         self.measure_screen = None
-        self.message_screen = None
         gc.collect()
 
     def clear_settings_screen(self):
@@ -105,8 +118,9 @@ class ScreenManager:
         gc.collect()
 
     def clear_message_screen(self):
-        self.message_screen = None
-        self.measure_screen = None
+        if self.message_screen:
+            self.message_screen.clear()
+            self.message_screen = None
         gc.collect()
 
     def set_blanking(self):

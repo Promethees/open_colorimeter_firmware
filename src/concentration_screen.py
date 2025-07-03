@@ -9,10 +9,10 @@ class ConcentrationScreen:
     BOTTOM_MARGIN = 5
     BBOX_HEIGHT_INDEX = 3
 
-    def __init__(self):
+    def __init__(self, concen_val=None):
         self.group = displayio.Group()
         self.con_unit = " nM/l"
-        self.concen_val = None
+        self.concen_val = concen_val
 
         # Setup color palette and tile grid
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
@@ -50,11 +50,13 @@ class ConcentrationScreen:
         self.group.append(self.title_label)
         self.group.append(self.value_lbl)
 
-        self._position_labels()
+        self._position_labels(self.concen_val)
 
     def _position_labels(self, new_val = "Unknown"):
-        self.value_lbl.text = str(new_val) + self.con_unit
-
+        if new_val:
+            self.value_lbl.text = str(new_val) + self.con_unit
+        else:
+            self.value_lbl.text = "Unknown" + self.con_unit
         title_height = self.title_label.bounding_box[self.BBOX_HEIGHT_INDEX]
         title_y = self.TOP_MARGIN + title_height
         self.title_label.anchored_position = (self.title_label.anchored_position[0], title_y)
