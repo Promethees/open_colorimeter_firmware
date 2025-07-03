@@ -66,6 +66,18 @@ class ScreenManager:
         self.message_screen.set_message(message)
         self.message_screen.set_to_about()
 
+    def init_measure_screen(self):
+        if self.measure_screen is None:
+            try:
+                self.clear_menu_screen()
+                self.clear_settings_screen()
+                self.clear_message_screen()
+                self.clear_concentration_screen()
+                self.measure_screen = MeasureScreen()
+
+            except MemoryError:
+                self.set_error_message("Memory allocation failed for MeasureScreen")
+
     def init_menu_screen(self):
         if self.menu_screen is None:
             try:
@@ -87,7 +99,6 @@ class ScreenManager:
 
     def init_concentration_screen(self):
         try:
-            print(f"current concentration is {self.colorimeter.concentration}")
             self.concentration_screen = ConcentrationScreen(self.colorimeter.concentration)
         except MemoryError:
             self.set_error_message("Memory allocation failed for Concentration Screen")
@@ -187,11 +198,7 @@ class ScreenManager:
     def update_screens(self):
         if self.colorimeter.mode == Mode.MEASURE:
             if self.measure_screen is None:
-                try:
-                    self.measure_screen = MeasureScreen()
-                except MemoryError:
-                    self.set_error_message("Memory allocation failed for MeasureScreen")
-                    return
+                self.measure_screen = MeasureScreen()
             try:
                 numeric_value, type_tag = self.colorimeter.measurement_value
                 self.measure_screen.set_measurement(

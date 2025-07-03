@@ -127,11 +127,11 @@ class ButtonHandler:
                 self.colorimeter.screen_manager.init_concentration_screen()
                 self.colorimeter.mode = Mode.CONCENTRATION
             else:
-                self.colorimeter.mode = Mode.MEASURE
                 self.colorimeter.screen_manager.clear_menu_screen()
-                self.colorimeter.measurement_name = self.colorimeter.menu_items[self.colorimeter.menu_item_pos]
                 gc.collect()
-                self.colorimeter.to_use_gain_asB = True
+                self.colorimeter.measurement_name = self.colorimeter.menu_items[self.colorimeter.menu_item_pos]
+                self.colorimeter.screen_manager.init_measure_screen()
+                self.colorimeter.mode = Mode.MEASURE
         elif self.up_button_pressed(buttons):
             self.decr_menu_item_pos()
         elif self.down_button_pressed(buttons):
@@ -139,7 +139,6 @@ class ButtonHandler:
 
     def _handle_settings_mode(self, buttons):
         if self.menu_button_pressed(buttons):
-            self.colorimeter.mode = Mode.MESSAGE
             values = self.colorimeter.screen_manager.get_settings_values()
             self.colorimeter.timeout_value = values["timeout_value"]
             self.colorimeter.timeout_unit = values["timeout_unit"]
@@ -158,8 +157,12 @@ class ButtonHandler:
                 self.colorimeter.screen_manager.clear_settings_screen()
                 self.colorimeter.screen_manager.show_message("Settings saved.", is_error=False)
                 self.colorimeter.to_use_gain_asB = False
+            except Exception as e:
+                print(f"tell me the Exception {e}")
             except MemoryError:
                 self.colorimeter.screen_manager.set_error_message("Memory allocation failed for message Screen")
+                self.colorimeter.to_use_gain_asB = False
+
 
         elif self.left_button_pressed(buttons):
             self.colorimeter.mode = Mode.MENU
@@ -189,7 +192,8 @@ class ButtonHandler:
                 self.colorimeter.screen_manager.show_message(msg, is_error=False)
                 self.colorimeter.to_use_gain_asB = False
             except MemoryError:
-                self.colorimeter.screen_manager.set_error_message("Memory allocation failed for message Screen")                
+                self.colorimeter.screen_manager.set_error_message("Memory allocation failed for message Screen")
+                self.colorimeter.to_use_gain_asB = False                
         elif self.blank_button_pressed(buttons):
             self.colorimeter.screen_manager.set_concentration_to_zero()
         elif self.up_button_pressed(buttons):
@@ -214,3 +218,5 @@ class ButtonHandler:
             self.colorimeter.screen_manager.set_error_message(self.colorimeter.calibrations.pop_error())
             self.colorimeter.mode = Mode.MESSAGE
             self.colorimeter.calibrations_checked = True
+        else:
+            return
