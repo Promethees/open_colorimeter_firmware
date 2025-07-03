@@ -7,6 +7,8 @@ from settings_screen import SettingsScreen
 from concentration_screen import ConcentrationScreen
 from light_sensor import LightSensorOverflow
 from mode import Mode
+import time
+import microcontroller
 
 class ScreenManager:
     def __init__(self, colorimeter):
@@ -23,20 +25,53 @@ class ScreenManager:
         self.clear_menu_screen()
         self.clear_settings_screen()
         self.clear_concentration_screen()
-        if self.message_screen is None:
-            self.message_screen = MessageScreen()
-        self.message_screen.set_message(f"Error: {message}")
-        self.message_screen.set_to_error()
+
+        retry_count = 0
+        max_retries = 5  # Prevent infinite loops
+
+        while retry_count < max_retries:
+            gc.collect()  # Force garbage collection
+            free_memory = gc.mem_free()
+            print(f"Free memory before allocation: {free_memory} bytes")
+
+            try:
+                # Attempt allocation
+                self.message_screen = MessageScreen()
+                break  # Exit on success
+            except MemoryError:
+                print(f"MemoryError: Needed ~10,240 bytes (free: {free_memory})")
+                # Free more aggressively
+                self.measure_screen = None
+                self.menu_screen = None
+                self.settings_screen = None
+                self.concentration_screen = None
+                time.sleep(0.2)  # Allow time for cleanup
+                retry_count += 1
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                break
+
+        # Success case
+        if self.message_screen is not None:
+            self.message_screen.set_message(f"Error: {message}")
+            self.message_screen.set_to_error()
+        else:
+            # Fallback: Use a simpler method (e.g., serial output)
+            microcontroller.reset()
+            print(f"FALLBACK: Error: {message} (Memory allocation failed after {max_retries} retries)")
 
     def set_abort_message(self, message):
         self.colorimeter.mode = Mode.MESSAGE
-        if self.message_screen is None:
-            self.clear_measure_screen()
-            self.clear_menu_screen()
-            self.clear_settings_screen()
-            self.message_screen = MessageScreen()
-        self.message_screen.set_message(message, ok_to_continue=False)
-        self.message_screen.set_to_abort()
+        try:
+            if self.message_screen is None:
+                self.clear_measure_screen()
+                self.clear_menu_screen()
+                self.clear_settings_screen()
+                self.message_screen = MessageScreen()
+            self.message_screen.set_message(message, ok_to_continue=False)
+            self.message_screen.set_to_abort()
+        except:
+            self.set_error_message("Memory allocation failed for Message Screen")
 
     def show_message(self, message, is_error=False):
         self.colorimeter.mode = Mode.MESSAGE
@@ -46,6 +81,8 @@ class ScreenManager:
         self.clear_concentration_screen()
         if self.message_screen is None:
             try:
+                gc.collect()
+                time.sleep(1)
                 self.message_screen = MessageScreen()
             except MemoryError:
                 self.set_error_message("Memory allocation failed for Message Screen")
@@ -76,14 +113,24 @@ class ScreenManager:
                 self.measure_screen = MeasureScreen()
 
             except MemoryError:
-                self.set_error_message("Memory allocation failed for MeasureScreen")
+                try:
+                    time.sleep(1)
+                    gc.collect() 
+                    self.measure_screen = MeasureScreen()
+                except MemoryError:
+                    self.set_error_message("Memory allocation failed for MeasureScreen")
 
     def init_menu_screen(self):
         if self.menu_screen is None:
             try:
                 self.menu_screen = MenuScreen()
             except MemoryError:
-                self.set_error_message("Memory allocation failed for MenuScreen")
+                try: 
+                    time.sleep(1)
+                    gc.collect()
+                    self.menu_screen = MenuScreen()
+                except MemoryError:
+                    self.set_error_message("Memory allocation failed for MenuScreen")
 
     def init_settings_screen(self):
         try:

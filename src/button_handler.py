@@ -63,6 +63,14 @@ class ButtonHandler:
             if event.pressed:
                 button_name = self.colorimeter.button_map.get(event.key_number)
                 if button_name:
+                    # Ignore 'right', 'down', 'up' buttons in MEASURE mode
+                    if self.colorimeter.mode == Mode.MEASURE and button_name in ('right', 'down', 'up'):
+                        continue
+
+                    # Ignore 'itime', 'gain', 'blank' in MENU mode
+                    if self.colorimeter.mode == Mode.MENU and button_name in ('blank', 'gain', 'itime'):
+                        continue
+
                     pressed_buttons.add(button_name)
 
         if not pressed_buttons or not self.check_debounce():
@@ -185,9 +193,9 @@ class ButtonHandler:
 
     def _handle_concentration_mode(self, buttons):
         if self.menu_button_pressed(buttons):
-            self.colorimeter.concentration = self.colorimeter.screen_manager.get_concentration_value()
-            self.colorimeter.screen_manager.clear_concentration_screen()
+            self.colorimeter.concentration = self.colorimeter.screen_manager.get_concentration_value() 
             try:
+                self.colorimeter.screen_manager.clear_concentration_screen()
                 msg = f"Concen val is {self.colorimeter.concentration} nM/l"
                 self.colorimeter.screen_manager.show_message(msg, is_error=False)
                 self.colorimeter.to_use_gain_asB = False
