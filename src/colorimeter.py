@@ -25,6 +25,11 @@ class Colorimeter:
     DEFAULT_MEASUREMENTS = [ABSORBANCE_STR, TRANSMITTANCE_STR, RAW_SENSOR_STR]
 
     def __init__(self):
+        # Setup managers
+        self.screen_manager = ScreenManager(self)
+        self.button_handler = ButtonHandler(self)
+        self.serial_manager = SerialManager(self)
+
         self.menu_items = list(self.DEFAULT_MEASUREMENTS)
         self.menu_view_pos = 0
         self.menu_item_pos = 0
@@ -47,11 +52,6 @@ class Colorimeter:
         self._init_light_sensor()
         self._init_battery_monitor()
         self._init_settings()
-
-        # Setup managers
-        self.screen_manager = ScreenManager(self)
-        self.button_handler = ButtonHandler(self)
-        self.serial_manager = SerialManager(self)
 
         # Extend menu items
         self.menu_items.extend([k for k in self.calibrations.data])

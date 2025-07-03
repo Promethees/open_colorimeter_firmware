@@ -73,7 +73,7 @@ class ScreenManager:
             self.set_error_message("Memory allocation failed for SettingsScreen")
 
     def init_concentration_screen(self):
-       In try:
+        try:
             self.concentration_screen = ConcentrationScreen()
         except MemoryError:
             self.set_error_message("Memory allocation failed for Concentration Screen")
