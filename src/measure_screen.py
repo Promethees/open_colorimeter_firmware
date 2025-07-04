@@ -3,8 +3,24 @@ import displayio
 import constants
 import fonts
 from adafruit_display_text import label
+import gc
 
 class MeasureScreen:
+    __slots__ = [
+        'palette',
+        'bitmap',
+        'tile_grid',
+        'header_label',
+        'value_label',
+        'type_label',
+        'comm_label',
+        'blank_label',
+        'gain_label',
+        'itime_label',
+        'bat_label',
+        'group'
+    ]
+
     GAIN_LABEL_X_OFFSET = 5  # Left margin for gain label
     ITIME_LABEL_X_OFFSET = 5  # Right margin offset for itime label
     TOP_MARGIN = 5  # Margin at top
@@ -20,16 +36,31 @@ class MeasureScreen:
         "comm ready": "yellow",
         "connected": "green",
         "stopped": "red",
-        "disconnected": "red"
+        " personally": "red"
     }
 
     def __init__(self):
-        # Setup color palette and tile grid
+        self.palette = None
+        self.bitmap = None
+        self.tile_grid = None
+        self.header_label = None
+        self.value_label = None
+        self.type_label = None
+        self.comm_label = None
+        self.blank_label = None
+        self.gain_label = None
+        self.itime_label = None
+        self.bat_label = None
+        self.group = displayio.Group()
+
+        # Setup color palette
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
         for i, (color, rgb) in enumerate(constants.COLOR_TO_RGB.items()):
             self.palette[i] = rgb
 
-        self.bitmap = displayio.Bitmap(board.DISPLAY.width, board.DISPLAY.height, len(constants.COLOR_TO_RGB))
+        # Create bitmap with reduced height if possible
+        display_height = min(board.DISPLAY.height, 64)  # Cap height to save memory
+        self.bitmap = displayio.Bitmap(board.DISPLAY.width, display_height, len(constants.COLOR_TO_RGB))
         self.bitmap.fill(0)  # Black
         self.tile_grid = displayio.TileGrid(self.bitmap, pixel_shader=self.palette)
 
@@ -43,6 +74,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["white"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40  # Added to limit text buffer size
         )
         self.header_label.anchored_position = (center_x, self.TOP_MARGIN + self.header_label.bounding_box[self.BBOX_HEIGHT_INDEX])
 
@@ -53,6 +85,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["white"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.value_label.anchored_position = (center_x, 0)
 
@@ -63,6 +96,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["blue"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.type_label.anchored_position = (center_x, 0)
 
@@ -73,6 +107,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["green"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.comm_label.anchored_position = (center_x, 0)
 
@@ -83,6 +118,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["orange"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.blank_label.anchored_position = (center_x, 0)
 
@@ -93,6 +129,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["orange"],
             scale=font_scale,
             anchor_point=(0.0, 1.0),
+            padding_right=40
         )
         self.gain_label.anchored_position = (self.GAIN_LABEL_X_OFFSET, 0)
 
@@ -103,6 +140,7 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["orange"],
             scale=font_scale,
             anchor_point=(0.0, 1.0),
+            padding_right=40
         )
         itime_x = board.DISPLAY.width // 2 - self.ITIME_LABEL_X_OFFSET
         self.itime_label.anchored_position = (itime_x, 0)
@@ -114,11 +152,11 @@ class MeasureScreen:
             color=constants.COLOR_TO_RGB["gray"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.bat_label.anchored_position = (center_x, 0)
 
-        # Create display group
-        self.group = displayio.Group()
+        # Add elements to group
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
         self.group.append(self.value_label)
@@ -128,6 +166,28 @@ class MeasureScreen:
         self.group.append(self.gain_label)
         self.group.append(self.itime_label)
         self.group.append(self.bat_label)
+
+        gc.collect()
+
+    def clear(self):
+        # Clear displayio resources
+        while len(self.group) > 0:
+            self.group.pop()
+        self.bitmap = None
+        self.palette = None
+        self.tile_grid = None
+        self.header_label = None
+        self.value_label = None
+        self.type_label = None
+        self.comm_label = None
+        self.blank_label = None
+        self.gain_label = None
+        self.itime_label = None
+        self.bat_label = None
+        self.group = displayio.Group()
+        if board.DISPLAY.root_group == self.group:
+            board.DISPLAY.root_group = None
+        gc.collect()
 
     def set_measurement(self, name, units, value, precision, type_tag=None, talking=False):
         """Update display with measurement or communication status."""
@@ -197,7 +257,7 @@ class MeasureScreen:
         line_count = 0
         labels = [
             self.value_label,
-            self.comm_label,  # Prioritize communication status
+            self.comm_label,
             self.type_label,
             self.blank_label,
             self.gain_label,
@@ -254,4 +314,5 @@ class MeasureScreen:
             label.anchored_position = (label.anchored_position[0], current_y)
 
     def show(self):
-        board.DISPLAY.root_group = self.group
+        if self.group:
+            board.DISPLAY.root_group = self.group
