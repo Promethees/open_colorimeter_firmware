@@ -3,8 +3,21 @@ import board
 import constants
 import fonts
 from adafruit_display_text import label
+import gc
 
 class SettingsScreen:
+    __slots__ = [
+        'group',
+        'items',
+        'current_item',
+        'palette',
+        'bitmap',
+        'tile_grid',
+        'title_label',
+        'setting_labels',
+        'saved_label'
+    ]
+
     TOP_MARGIN = 5
     BOTTOM_MARGIN = 5
     BBOX_HEIGHT_INDEX = 3
@@ -35,13 +48,21 @@ class SettingsScreen:
             },
         ]
         self.current_item = 0
+        self.palette = None
+        self.bitmap = None
+        self.tile_grid = None
+        self.title_label = None
+        self.setting_labels = []
+        self.saved_label = None
 
-        # Setup color palette and tile grid
+        # Setup color palette
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
         for i, (color, rgb) in enumerate(constants.COLOR_TO_RGB.items()):
             self.palette[i] = rgb
 
-        self.bitmap = displayio.Bitmap(board.DISPLAY.width, board.DISPLAY.height, len(constants.COLOR_TO_RGB))
+        # Create bitmap with reduced height
+        display_height = min(board.DISPLAY.height, 64)
+        self.bitmap = displayio.Bitmap(board.DISPLAY.width, display_height, len(constants.COLOR_TO_RGB))
         self.bitmap.fill(0)  # Black
         self.tile_grid = displayio.TileGrid(self.bitmap, pixel_shader=self.palette)
 
@@ -55,11 +76,11 @@ class SettingsScreen:
             color=constants.COLOR_TO_RGB["white"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.title_label.anchored_position = (center_x, self.TOP_MARGIN + self.title_label.bounding_box[self.BBOX_HEIGHT_INDEX])
 
         # Create labels for settings
-        self.setting_labels = []
         for i in range(len(self.items)):
             lbl = label.Label(
                 fonts.font_10pt,
@@ -67,6 +88,7 @@ class SettingsScreen:
                 color=constants.COLOR_TO_RGB["white"],
                 scale=font_scale,
                 anchor_point=(0.5, 1.0),
+                padding_right=40
             )
             self.setting_labels.append(lbl)
 
@@ -77,10 +99,11 @@ class SettingsScreen:
             color=constants.COLOR_TO_RGB["green"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
+            padding_right=40
         )
         self.setting_labels.append(self.saved_label)
 
-        # Create group
+        # Add elements to group
         self.group.append(self.tile_grid)
         self.group.append(self.title_label)
         for lbl in self.setting_labels:
@@ -88,6 +111,22 @@ class SettingsScreen:
 
         # Initialize label text
         self._update_labels()
+        gc.collect()
+
+    def clear(self):
+        # Clear displayio resources
+        while len(self.group) > 0:
+            self.group.pop()
+        self.bitmap = None
+        self.palette = None
+        self.tile_grid = None
+        self.title_label = None
+        self.setting_labels = []
+        self.saved_label = None
+        self.group = displayio.Group()
+        if board.DISPLAY.root_group == self.group:
+            board.DISPLAY.root_group = None
+        gc.collect()
 
     def _update_constraints(self, item):
         """Update min, max, step based on unit, skip if unit is None."""
@@ -115,8 +154,6 @@ class SettingsScreen:
     def _update_labels(self):
         """Update text and colors of setting labels."""
         for i, item in enumerate(self.items):
-            # print(f"The {i} item is:")
-            # print(item)
             if item["name"] == "Timeout" and (item["value"] is None or item["unit"] is None):
                 text = f"{item['name']}: Infinite"
             else:
@@ -132,7 +169,6 @@ class SettingsScreen:
                 if self.setting_labels[2].text == "Saved" or i == 0:
                     self.setting_labels[2].text = "Saved"
                     self.setting_labels[2].color = constants.COLOR_TO_RGB["green"]
-
 
         self._position_labels()
 
@@ -203,7 +239,7 @@ class SettingsScreen:
         for item in self.items:
             item["value"] = item["saved_value"]
             item["unit"] = item["saved_unit"]
-        self._update_constraints(item)
+            self._update_constraints(item)
         self._update_labels()
 
     def move_up(self):
@@ -258,4 +294,5 @@ class SettingsScreen:
         }
 
     def show(self):
-        board.DISPLAY.root_group = self.group
+        if self.group:
+            board.DISPLAY.root_group = self.group

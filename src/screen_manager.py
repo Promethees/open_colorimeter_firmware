@@ -96,8 +96,6 @@ class ScreenManager:
         if not self.menu_screen:
             self.clear_all_screens()
             self.menu_screen = self._try_allocate(MenuScreen, "Memory allocation failed for MenuScreen")
-        self.colorimeter.menu_view_pos = 0
-        self.colorimeter.menu_item_pos = 0
         self.active_screen = self.menu_screen
 
     def transition_to_settings(self):
@@ -123,7 +121,7 @@ class ScreenManager:
             self.concentration_screen = self._try_allocate(
                 ConcentrationScreen,
                 "Memory allocation failed for Concentration Screen",
-                initial_value=self.colorimeter.concentration
+                concen_val=self.colorimeter.concentration
             )
         self.active_screen = self.concentration_screen
 
