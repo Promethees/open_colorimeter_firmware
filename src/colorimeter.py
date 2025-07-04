@@ -16,6 +16,43 @@ from serial_manager import SerialManager
 from mode import Mode
 
 class Colorimeter:
+    # Singleton instance
+    _instance = None
+
+    # Define __slots__ to fixate attributes and reduce memory fragmentation
+    __slots__ = [
+        'screen_manager',
+        'button_handler',
+        'serial_manager',
+        'menu_items',
+        'menu_view_pos',
+        'menu_item_pos',
+        'mode',
+        'is_blanked',
+        'is_talking',
+        'serial_connected',
+        'blank_value',
+        'last_transmission_time',
+        'calibrations_checked',
+        'serial_start_time',
+        'to_use_gain_asB',
+        'concentration',
+        'last_button_press',
+        'pad',
+        'button_map',
+        'configuration',
+        'calibrations',
+        'light_sensor',
+        'battery_monitor',
+        'gain_cycle',
+        'itime_cycle',
+        'timeout_value',
+        'timeout_unit',
+        'transmission_interval_value',
+        'transmission_interval_unit',
+        'measurement_name'
+    ]
+
     ABOUT_STR = 'About'
     RAW_SENSOR_STR = 'Raw Sensor'
     ABSORBANCE_STR = 'Absorbance'
@@ -24,12 +61,21 @@ class Colorimeter:
     CONCENTRATION_STR = 'Concentration'
     DEFAULT_MEASUREMENTS = [ABSORBANCE_STR, TRANSMITTANCE_STR, RAW_SENSOR_STR]
 
-    def __init__(self):
-        # Setup managers
-        self.screen_manager = ScreenManager(self)
-        self.button_handler = ButtonHandler(self)
-        self.serial_manager = SerialManager(self)
+    def __new__(cls):
+        # Singleton pattern: return existing instance if it exists
+        if cls._instance is None:
+            cls._instance = super(Colorimeter, cls).__new__(cls)
+        return cls._instance
 
+    def __init__(self):
+        # Check if already initialized to avoid reinitializing singleton
+        if hasattr(self, 'screen_manager') and self.screen_manager is not None:
+            return
+
+        # Initialize attributes to None or default values
+        self.screen_manager = None
+        self.button_handler = None
+        self.serial_manager = None
         self.menu_items = list(self.DEFAULT_MEASUREMENTS)
         self.menu_view_pos = 0
         self.menu_item_pos = 0
@@ -43,6 +89,25 @@ class Colorimeter:
         self.serial_start_time = None
         self.to_use_gain_asB = False
         self.concentration = None
+        self.last_button_press = None
+        self.pad = None
+        self.button_map = None
+        self.configuration = None
+        self.calibrations = None
+        self.light_sensor = None
+        self.battery_monitor = None
+        self.gain_cycle = None
+        self.itime_cycle = None
+        self.timeout_value = None
+        self.timeout_unit = None
+        self.transmission_interval_value = None
+        self.transmission_interval_unit = None
+        self.measurement_name = None
+
+        # Setup managers
+        self.screen_manager = ScreenManager(self)
+        self.button_handler = ButtonHandler(self)
+        self.serial_manager = SerialManager(self)
 
         # Initialize components
         self._init_display()
@@ -59,6 +124,9 @@ class Colorimeter:
 
         # Set default measurement
         self._set_default_measurement()
+
+        # Force garbage collection to clean up any temporary objects
+        gc.collect()
 
     def _init_display(self):
         board.DISPLAY.brightness = 1.0
@@ -246,3 +314,5 @@ class Colorimeter:
             self.battery_monitor.update()
             self.screen_manager.update_battery(self.battery_monitor.voltage_lowpass)
             time.sleep(constants.LOOP_DT)
+            # Periodic garbage collection to reduce fragmentation
+            gc.collect()
