@@ -32,12 +32,7 @@ your feather development board.
 
 ## Installation (Hosting System)
 
-### MacOS
-* Open your terminal, navigate to the root folder, type in `chmod +x install_macos.sh` then `./install_macos.sh` to install the dependencies. 
-This helps install `homebrew`, `python`, `pip`, `hidapi`. 
-
-### Windows
-* Right click on `install_windows.sh` > "Run as Administrator" or launch it in **Administrator Command Prompt** 
+* See installation guide from [microalbumin-Flask](https://github.com/Promethees/microalbumin-Flask)
 
 ## Navigation (Adafruit PyBadge)
 ### Menu
