@@ -1,10 +1,9 @@
 {
-  "gain" : "med",
-  "integration_time" : "500ms",
-  "startup" : "Absorbance",
-  "precision" : 2,
-  "timeout_value": 20,
-  "timeout_unit": "min",
-  "transmission_interval_value": 1,
-  "transmission_interval_unit": "min"
+  "startup"             : "Relative Units",
+  "gain_sensor_90"      : "max", 
+  "itime_sensor_90"     : "600ms",
+  "gain_sensor_180"     : "med", 
+  "itime_sensor_180"    : "300ms",
+  "ref_irradiance_180"  : 1000
 } 
+

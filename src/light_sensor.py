@@ -1,9 +1,7 @@
-import busio
-import board
 import adafruit_tsl2591
 
 
-class LightSensor:
+class LightSensorTSL2591:
 
     TSL2591_MAX_COUNT_100MS = 36863  # 0x8FFF
     TSL2591_MAX_COUNT = 65535        # 0xFFFF
@@ -11,13 +9,22 @@ class LightSensor:
     DEFAULT_GAIN = adafruit_tsl2591.GAIN_MED
     DEFAULT_INTEGRATION_TIME = adafruit_tsl2591.INTEGRATIONTIME_500MS
 
-    def __init__(self):
+    GAIN_TO_AGAIN = { 
+            adafruit_tsl2591.GAIN_LOW  :  1.0, 
+            adafruit_tsl2591.GAIN_MED  :  24.5,  
+            adafruit_tsl2591.GAIN_HIGH :  400.0, 
+            adafruit_tsl2591.GAIN_MAX  :  9200,
+            }
+
+    # Irradiance conversion coefficient gives (uW/cm^2) per count with atime=1ms and gain=1x
+    IRRADIANCE_COEFF = 100.0*GAIN_TO_AGAIN[adafruit_tsl2591.GAIN_HIGH]/264.1
+
+    def __init__(self, i2c):
 
         # Set up light sensor
-        i2c = busio.I2C(board.SCL, board.SDA)
         try:
             self._device = adafruit_tsl2591.TSL2591(i2c)
-        except ValueError as error:
+        except (ValueError, OSError) as error:
             raise LightSensorIOError(error)
         self.gain = self.DEFAULT_GAIN 
         self.integration_time = self.DEFAULT_INTEGRATION_TIME 
@@ -35,11 +42,37 @@ class LightSensor:
         value = self._device.raw_luminosity[self.channel]
         if value >= self.max_counts:
             raise LightSensorOverflow('light sensor reading > max_counts')
+        #print(value)
         return value
+
+    @property
+    def values(self):
+        values = self._device.raw_luminosity
+        for v in values:
+            if v >= self.max_counts:
+                raise LightSensorOverflow('light sensor reading > max_counts')
+        return values
+
+    @property
+    def lux(self):
+        return self._device.lux
+
+    @property
+    def irradiance(self):
+        raw_value = self._device.raw_luminosity[0]/(self.again*self.atime)
+        return raw_value*self.IRRADIANCE_COEFF
 
     @property
     def gain(self):
         return self._gain
+
+    @property
+    def again(self):
+        return self.GAIN_TO_AGAIN[self._gain]
+
+    @property
+    def atime(self):
+        return 100.0*self._integration_time + 100.0
 
     @gain.setter
     def gain(self, value):
@@ -61,4 +94,5 @@ class LightSensorOverflow(Exception):
 
 class LightSensorIOError(Exception):
     pass
+
 

@@ -2,7 +2,7 @@ import board
 import collections
 import adafruit_tsl2591
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 CALIBRATIONS_FILE = 'calibrations.json'
 CONFIGURATION_FILE = 'configuration.json'
@@ -14,23 +14,18 @@ DEBOUNCE_DT = 0.6
 NUM_BLANK_SAMPLES = 50 
 BATTERY_AIN_PIN = board.A6
 
-DEFAULT_TIMEOUT_VALUE = 20 # Set None if you don't want timeout
-DEFAULT_TIMEOUT_UNIT = "min"
-DEFAULT_TRANSMISSION_INTERVAL_VALUE = 1
-DEFAULT_TRANSMISSION_INTERVAL_UNIT = "min"
-
-CONNECTION_WAIT_TIME = 1
+DEFAULT_REF_IRRADIANCE_180 = 1000.0
+NUM_SAMPLE_180 = 10
 
 BUTTON = { 
-        'none'  : 0b00000000,
-        'left'  : 0b10000000,
-        'up'    : 0b01000000,
-        'down'  : 0b00100000, 
-        'right' : 0b00010000,
-        'menu'  : 0b00001000, 
-        'blank' : 0b00000100, 
-        'itime' : 0b00000010,
-        'gain'  : 0b00000001,
+        'left'  : 7,
+        'up'    : 6, 
+        'down'  : 5, 
+        'right' : 4, 
+        'menu'  : 3, 
+        'norm'  : 2, 
+        'itime' : 1, 
+        'gain'  : 0, 
         }
 
 COLOR_TO_RGB = collections.OrderedDict([ 
@@ -41,7 +36,6 @@ COLOR_TO_RGB = collections.OrderedDict([
     ('blue'   , 0x0000ff),
     ('white'  , 0xffffff), 
     ('orange' , 0xffb447),
-    ('yellow' , 0xffff00)
     ])
 
 STR_TO_GAIN = collections.OrderedDict([
@@ -61,3 +55,8 @@ STR_TO_INTEGRATION_TIME = collections.OrderedDict([
         ('600ms', adafruit_tsl2591.INTEGRATIONTIME_600MS),
         ])
 INTEGRATION_TIME_TO_STR = {v:k for k,v in STR_TO_INTEGRATION_TIME.items()}
+
+OVERFLOW_STR = 'OVFL'
+ABOUT_STR = 'About'
+MU_STR = '\u03BC'
+CM2_STR = 'cm\u00B2'
