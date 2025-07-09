@@ -206,6 +206,8 @@ class ReferenceUnitScreen:
             if label is self.value_label:
                 label_height = label.bounding_box[self.BBOX_HEIGHT_INDEX]
                 current_y += spacing + label_height
-                self.value_label.anchored_position = (self.LEFT_MARGIN, current_y)
+                # self.value_label.anchored_position = (self.LEFT_MARGIN, current_y)
+                self.value_label.anchored_position = (board.DISPLAY.width // 6, board.DISPLAY.height // 2)
             elif label is self.units_label:
-                self.units_label.anchored_position = (self.LEFT_MARGIN + self.VALUE_TO_UNITS_X_OFFSET, current_y)
+                # self.units_label.anchored_position = (self.LEFT_MARGIN + self.VALUE_TO_UNITS_X_OFFSET, current_y)
+                self.units_label.anchored_position = (board.DISPLAY.width * 0.6, board.DISPLAY.height // 2)
