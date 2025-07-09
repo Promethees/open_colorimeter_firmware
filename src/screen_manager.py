@@ -231,9 +231,9 @@ class ScreenManager:
     def get_concentration_value(self):
         return self.concentration_screen.concen_val if self.concentration_screen else None
 
-    def set_concentration_to_zero(self):
+    def set_concentration_to_none(self):
         if self.concentration_screen:
-            self.concentration_screen.set_to_zero()
+            self.concentration_screen.set_to_none()
 
     def adjust_concentration(self, value):
         if self.concentration_screen:

@@ -107,7 +107,7 @@ class ConcentrationScreen:
         current_y = title_y + spacing + label_height
         self.value_lbl.anchored_position = (board.DISPLAY.width // 2, current_y)
 
-    def set_to_zero(self):
+    def set_to_none(self):
         self.concen_val = None
         self._position_labels()
 
