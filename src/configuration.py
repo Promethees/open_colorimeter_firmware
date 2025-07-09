@@ -104,7 +104,7 @@ class Configuration(JsonSettingsFile):
 
     @property
     def transmission_interval_unit(self):
-        return self.data.get('transmission_interval_unit', constants.DEFAULT_TRANSMISION_INTERVAL_UNIT)
+        return self.data.get('transmission_interval_unit', constants.DEFAULT_TRANSMISSION_INTERVAL_UNIT)
     
     
     

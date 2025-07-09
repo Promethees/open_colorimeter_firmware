@@ -77,7 +77,8 @@ class MenuScreen:
         vert_pix_remaining = display_height - (menu_line_y + 1)
         test_label = label.Label(fonts.font_10pt, text='test', scale=font_scale)
         label_dy = test_label.bounding_box[3] + self.PADDING_ITEM
-        self.items_per_screen = min(vert_pix_remaining // label_dy, self.MAX_ITEMS)
+        # self.items_per_screen = min(vert_pix_remaining // label_dy, self.MAX_ITEMS)
+        self.items_per_screen = 6
 
         # Create item labels
         for i in range(self.items_per_screen):
