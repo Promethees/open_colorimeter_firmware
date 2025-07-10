@@ -42,33 +42,14 @@ class ScreenManager:
                 retry_count += 1
         if not self._error_handling:
             self._error_handling = True
-            self._show_fallback_error(error_message)
+            self.show_error_message(error_message)
             self._error_handling = False
         return None
-
-    def _show_fallback_error(self, message):
-        self.colorimeter.mode = Mode.MESSAGE
-        self.clear_all_screens()
-        if self.message_screen is None:
-            try:
-                self.message_screen = MessageScreen()
-            except MemoryError:
-                board.DISPLAY.root_group = None
-                microcontroller.reset()
-                return
-        self.message_screen.set_message(f"Error: {message}")
-        self.message_screen.set_to_error()
-        self.active_screen = self.message_screen
 
     def clear_all_screens(self):
         for screen in (self.measure_screen, self.menu_screen, self.message_screen):
             if screen and hasattr(screen, 'clear'):
                 screen.clear()
-            elif screen and hasattr(screen, 'group'):
-                while len(screen.group) > 0:
-                    screen.group.pop()
-                if board.DISPLAY.root_group == screen.group:
-                    board.DISPLAY.root_group = None
         self.measure_screen = None
         self.menu_screen = None
         self.message_screen = None
@@ -97,16 +78,26 @@ class ScreenManager:
         if not self.menu_screen:
             self.clear_all_screens()
             self.menu_screen = self._try_allocate(MenuScreen, "Memory allocation failed for MenuScreen")
-            self.colorimeter.menu_view_pos = 0
-            self.colorimeter.menu_item_pos = self.colorimeter.menu_items.index(self.colorimeter.measurement_name)
-            self.update_menu_screen()
+            if self.menu_screen:
+                self.colorimeter.menu_view_pos = 0
+                self.colorimeter.menu_item_pos = self.colorimeter.menu_items.index(self.colorimeter.measurement_name)
+                self.update_menu_screen()
         self.active_screen = self.menu_screen
 
     def show_error_message(self, message):
         if self._error_handling:
             return
         self._error_handling = True
-        self._show_fallback_error(message)
+        self.colorimeter.mode = Mode.MESSAGE
+        self.clear_all_screens()
+        self.message_screen = self._try_allocate(MessageScreen, "Memory allocation failed for Message Screen")
+        if self.message_screen:
+            self.message_screen.set_message(message)
+            self.message_screen.set_to_error()
+            self.active_screen = self.message_screen
+        else:
+            board.DISPLAY.root_group = None
+            microcontroller.reset()
         self._error_handling = False
 
     def show_abort_message(self, message):
@@ -136,6 +127,28 @@ class ScreenManager:
             self.message_screen.set_message(message)
             self.message_screen.set_to_about()
             self.active_screen = self.message_screen
+        else:
+            board.DISPLAY.root_group = None
+            microcontroller.reset()
+        self._error_handling = False
+
+    def show_message(self, message, is_error=True):
+        if self._error_handling:
+            return
+        self._error_handling = True
+        self.colorimeter.mode = Mode.MESSAGE
+        self.clear_all_screens()
+        self.message_screen = self._try_allocate(MessageScreen, "Memory allocation failed for Message Screen")
+        if self.message_screen:
+            self.message_screen.set_message(message)
+            if is_error:
+                self.message_screen.set_to_error()
+            else:
+                self.message_screen.set_to_about()
+            self.active_screen = self.message_screen
+        else:
+            board.DISPLAY.root_group = None
+            microcontroller.reset()
         self._error_handling = False
 
     def update_battery(self, voltage):
@@ -176,7 +189,7 @@ class ScreenManager:
             mode_to_transition = {
                 Mode.MEASURE: self.transition_to_measure,
                 Mode.MENU: self.transition_to_menu,
-                Mode.MESSAGE: lambda: self.show_message("Mode restored", is_error=False),
+                Mode.MESSAGE: lambda: self.show_message("Mode restored", is_error=True),
                 Mode.ABORT: lambda: self.show_abort_message("Mode restored")
             }
             transition = mode_to_transition.get(self.colorimeter.mode)
