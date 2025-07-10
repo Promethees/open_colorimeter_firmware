@@ -37,13 +37,13 @@ your feather development board.
 ## Navigation (Adafruit PyBadge/Colorimeter Machine)
 ### Menu
 * How should it look like 
-<img src="/images/Menu.jpeg" width="100">
+<img src="/images/Menu.png" width="100">
 
 * On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
 
 ### Measure
 * How should it look like 
-<img src="/images/Measure.jpeg" width="100">.
+<img src="/images/Measure.jpeg" width="100">
 
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!
@@ -100,13 +100,13 @@ your feather development board.
 	- `Menu`: Save the Concentration value set, get back to Menu
 * Possible displays:
 	- Concentration value during modification
-	<img src="/images/concen.jpeg" width="100">
+	<img src="/images/concen.png" width="100">
 
 	- Concentration value set to `Unknown`
-	<img src="/images/concen_non.png" width="100">
+	<img src="/images/concen_none.png" width="100">
 
 	- Concentration value saved
-	<img src="/images/concen_saved.jpeg" width="100">
+	<img src="/images/concen_saved.png" width="100">
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
