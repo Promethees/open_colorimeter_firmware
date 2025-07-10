@@ -1,110 +1,29 @@
 {
-	"Beer": {
-		"units": "SRM",
-		"classification": "Type",
-		"fit_type": "linear",
-		"fit_coef": [1.0, 0.0],
-		"type_ranges": [
-			{
-				"min": 0.0, 
-				"max": 0.1,
-				"tag": "Lager"
-			},
-			{
-				"min": 0.1,
-				"max": 0.2,
-				"tag": "Ale"
-			},
-			{
-				"min": 0.2,
-				"max": 0.3,
-				"tag": "Stout"
-			}
-		],
-		"led": "610"
-	},
-	"Ammonia API": {
-    "units": "ppm",
-    "led": "630",
-    "fit_type": "polynomial",
+  "Protein": {
+    "units": "mg/mL",
+    "led": "275",
+    "fit_type": "linear",
     "fit_coef": [
-      1.0128521350438369,
-      1.890930808804952,
+      1.55990706936608,
       0.0
     ],
     "range": {
-      "min": 0.0,
-      "max": 2.0
-    }
+      "min": 0.0
+    },
+    "channel": 2
   },
-  "Vi Khuan": {
-    "units": "Abs",
-    "led": "610",
-    "fit_type": "polynomial",
-    "fit_coef": [
-      -0.4122,
-      2.2621,
-      0.0028
-    ],
-    "range": {
-      "min": 0.0,
-      "max": 3.26
+  "dsDNA": {
+    "units": "ng/µL",
+      "led": 255,
+      "fit_type": "linear",
+      "fit_coef": [
+        51.09272427260531,
+        0.0
+        ],
+      "range": {
+        "min": 0.0
+      },
+      "channel": 2
     }
-  },
- "Vi Khuan-rev1": {
-    "units": "Abs",
-    "led": "610",
-    "fit_type": "polynomial",
-    "fit_coef": [
-      -0.3482,
-      0.2712,
-      1.7731
-      0.0018
-    ],
-    "range": {
-      "min": 0.0,
-      "max": 3.26
-    }
-  },
-"FD&C Blue 1": {
-    "units": "mg/L",
-    "led": "630",
-    "fit_type": "polynomial",
-    "fit_coef": [
-      9.657673193787982,
-      0.0
-    ],
-    "range": {
-      "min": 0.0,
-      "max": 0.81
-    }
-  },
-  "Nitrate API": {
-    "units": "ppm",
-    "led": "520",
-    "fit_type": "polynomial",
-    "fit_coef": [
-      0.32039213453320625,
-      34.032597696304,
-      0.0
-    ],
-    "range": {
-      "min": 0.0,
-      "max": 1.47
-    }
-  },
-  "Nitrite API": {
-    "units": "ppm",
-    "led": "520",
-    "fit_type": "polynomial",
-    "fit_coef": [
-      0.13111937060865314,
-      1.2591439203550079,
-      0.0
-    ],
-    "range": {
-      "min": 0.0,
-      "max": 1.4
-    }
-  }
 }
+

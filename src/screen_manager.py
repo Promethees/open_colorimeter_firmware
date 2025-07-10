@@ -1,15 +1,14 @@
 import gc
 import displayio
-from menu_screen import MenuScreen
-from message_screen import MessageScreen
-from measure_screen import MeasureScreen
-from settings_screen import SettingsScreen
-from concentration_screen import ConcentrationScreen
-from light_sensor import LightSensorOverflow
-from mode import Mode
 import time
 import microcontroller
 import board
+from menu_screen import MenuScreen
+from message_screen import MessageScreen
+from measure_screen import MeasureScreen
+from mode import Mode
+from light_sensor import LightSensorOverflow
+import constants
 
 class ScreenManager:
     __slots__ = [
@@ -17,8 +16,6 @@ class ScreenManager:
         'menu_screen',
         'message_screen',
         'measure_screen',
-        'settings_screen',
-        'concentration_screen',
         'active_screen',
         '_error_handling'
     ]
@@ -28,8 +25,6 @@ class ScreenManager:
         self.menu_screen = None
         self.message_screen = None
         self.measure_screen = None
-        self.settings_screen = None
-        self.concentration_screen = None
         self.active_screen = None
         self._error_handling = False
         gc.collect()
@@ -53,83 +48,55 @@ class ScreenManager:
     def _show_fallback_error(self, message):
         self.colorimeter.mode = Mode.MESSAGE
         self.clear_all_screens()
-        if self.message_screen is None:
-            try:
-                self.message_screen = MessageScreen()
-            except MemoryError:
-                board.DISPLAY.root_group = None
-                microcontroller.reset()
-                return
-        self.message_screen.set_message(f"Error: {message}")
-        self.message_screen.set_to_error()
-        self.active_screen = self.message_screen
+        self.message_screen = self._try_allocate(MessageScreen, "Memory allocation failed for Message Screen")
+        if self.message_screen:
+            self.message_screen.set_message(f"Error: {message}")
+            self.message_screen.set_to_error()
+            self.active_screen = self.message_screen
+        else:
+            board.DISPLAY.root_group = None
+            microcontroller.reset()
 
     def clear_all_screens(self):
-        for screen in (self.measure_screen, self.menu_screen, self.settings_screen, self.concentration_screen, self.message_screen):
+        for screen in (self.measure_screen, self.menu_screen, self.message_screen):
             if screen and hasattr(screen, 'clear'):
                 screen.clear()
-            elif screen and hasattr(screen, 'group'):
-                while len(screen.group) > 0:
-                    screen.group.pop()
-                if board.DISPLAY.root_group == screen.group:
-                    board.DISPLAY.root_group = None
         self.measure_screen = None
         self.menu_screen = None
-        self.settings_screen = None
-        self.concentration_screen = None
         self.message_screen = None
         gc.collect()
 
     def transition_to_measure(self):
         if self.colorimeter.mode != Mode.MEASURE:
             return
-        if not self.measure_screen:
-            self.clear_all_screens()
-            self.measure_screen = self._try_allocate(MeasureScreen, "Memory allocation failed for MeasureScreen")
-            if self.measure_screen and self.colorimeter.is_blanked:
-                self.measure_screen.set_blanked()
+        self.clear_all_screens()
+        self.measure_screen = self._try_allocate(MeasureScreen, "Memory allocation failed for MeasureScreen")
+        if self.measure_screen and self.colorimeter.is_blanked:
+            self.measure_screen.set_blanked()
         self.active_screen = self.measure_screen
 
     def transition_to_menu(self):
         if self.colorimeter.mode != Mode.MENU:
             return
-        if not self.menu_screen:
-            self.clear_all_screens()
-            self.menu_screen = self._try_allocate(MenuScreen, "Memory allocation failed for MenuScreen")
+        self.clear_all_screens()
+        self.menu_screen = self._try_allocate(MenuScreen, "Memory allocation failed for MenuScreen")
+        if self.menu_screen:
+            self.colorimeter.menu_view_pos = 0
+            self.colorimeter.menu_item_pos = self.colorimeter.menu_items.index(self.colorimeter.measurement_name)
+            self.update_menu_screen()
         self.active_screen = self.menu_screen
-
-    def transition_to_settings(self):
-        if self.colorimeter.mode != Mode.SETTINGS:
-            return
-        if not self.settings_screen:
-            self.clear_all_screens()
-            self.settings_screen = self._try_allocate(SettingsScreen, "Memory allocation failed for SettingsScreen")
-            if self.settings_screen:
-                self.settings_screen.set_values(
-                    self.colorimeter.timeout_value,
-                    self.colorimeter.timeout_unit,
-                    self.colorimeter.transmission_interval_value,
-                    self.colorimeter.transmission_interval_unit
-                )
-        self.active_screen = self.settings_screen
-
-    def transition_to_concentration(self):
-        if self.colorimeter.mode != Mode.CONCENTRATION:
-            return
-        if not self.concentration_screen:
-            self.clear_all_screens()
-            self.concentration_screen = self._try_allocate(
-                ConcentrationScreen,
-                "Memory allocation failed for Concentration Screen",
-                concen_val=self.colorimeter.concentration
-            )
-        self.active_screen = self.concentration_screen
 
     def show_error_message(self, message):
         if self._error_handling:
             return
         self._error_handling = True
-        self._show_fallback_error(message)
+        self.colorimeter.mode = Mode.MESSAGE
+        self.clear_all_screens()
+        self.message_screen = self._try_allocate(MessageScreen, "Memory allocation failed for Message Screen")
+        if self.message_screen:
+            self.message_screen.set_message(message)
+            self.message_screen.set_to_error()
+            self.active_screen = self.message_screen
         self._error_handling = False
 
     def show_abort_message(self, message):
@@ -148,7 +115,7 @@ class ScreenManager:
             microcontroller.reset()
         self._error_handling = False
 
-    def show_message(self, message, is_error=False):
+    def show_about_message(self, message):
         if self._error_handling:
             return
         self._error_handling = True
@@ -157,15 +124,9 @@ class ScreenManager:
         self.message_screen = self._try_allocate(MessageScreen, "Memory allocation failed for Message Screen")
         if self.message_screen:
             self.message_screen.set_message(message)
-            if is_error:
-                self.message_screen.set_to_error()
-            else:
-                self.message_screen.set_to_about()
+            self.message_screen.set_to_about()
             self.active_screen = self.message_screen
         self._error_handling = False
-
-    def show_about_message(self, message):
-        self.show_message(message, is_error=False)
 
     def set_blanking(self):
         if self.measure_screen:
@@ -181,7 +142,7 @@ class ScreenManager:
 
     def update_battery(self, voltage):
         if self.measure_screen:
-            self.measure_screen.set_bat(voltage)
+            self.measure_screen.set_battery(voltage)
 
     def update_menu_screen(self):
         if not self.menu_screen:
@@ -191,7 +152,18 @@ class ScreenManager:
         view_items = []
         for i, item in enumerate(self.colorimeter.menu_items[n0:n1]):
             led = self.colorimeter.calibrations.led(item)
-            item_text = f"{n0+i} {item}" if led is None else f"{n0+i} {item} ({led})"
+            chan = self.colorimeter.calibrations.channel(item)
+            if led is None and chan is None:
+                item_text = f"{n0+i} {item}"
+            elif chan is None:
+                item_text = f"{n0+i} {item} ({led})"
+            elif led is None:
+                chan_str = constants.CHANNEL_TO_STR[chan]
+                item_text = f"{n0+i} {item} ({chan_str})"
+            else:
+                chan_str = constants.CHANNEL_TO_STR[chan]
+                item = item[:8]
+                item_text = f"{n0+i} {item} ({led},{chan_str})"
             view_items.append(item_text)
         try:
             self.menu_screen.set_menu_items(view_items)
@@ -201,56 +173,16 @@ class ScreenManager:
         pos = self.colorimeter.menu_item_pos - self.colorimeter.menu_view_pos
         self.menu_screen.set_curr_item(pos)
 
-    def get_settings_values(self):
-        return self.settings_screen.get_values() if self.settings_screen else None
-
-    def increment_setting_value(self):
-        if self.settings_screen:
-            self.settings_screen.increment_value()
-
-    def decrement_setting_value(self):
-        if self.settings_screen:
-            self.settings_screen.decrement_value()
-
-    def move_setting_down(self):
-        if self.settings_screen:
-            self.settings_screen.move_down()
-
-    def cycle_setting_unit(self):
-        if self.settings_screen:
-            self.settings_screen.cycle_unit()
-
-    def revert_settings_to_saved(self):
-        if self.settings_screen:
-            self.settings_screen.revert_to_saved()
-
-    def set_timeout_none(self):
-        if self.settings_screen:
-            self.settings_screen.set_timeout_none()
-
-    def get_concentration_value(self):
-        return self.concentration_screen.concen_val if self.concentration_screen else None
-
-    def set_concentration_to_zero(self):
-        if self.concentration_screen:
-            self.concentration_screen.set_to_zero()
-
-    def adjust_concentration(self, value):
-        if self.concentration_screen:
-            self.concentration_screen.add(value)
-
     def update_screens(self):
-        if self.active_screen and self.colorimeter.mode in (Mode.MEASURE, Mode.MENU, Mode.SETTINGS, Mode.CONCENTRATION, Mode.MESSAGE, Mode.ABORT):
+        if self.active_screen and self.colorimeter.mode in (Mode.MEASURE, Mode.MENU, Mode.MESSAGE, Mode.ABORT):
             if self.colorimeter.mode == Mode.MEASURE and self.active_screen == self.measure_screen:
                 try:
-                    numeric_value, type_tag = self.colorimeter.measurement_value
                     self.measure_screen.set_measurement(
                         self.colorimeter.measurement_name,
                         self.colorimeter.measurement_units,
-                        numeric_value,
-                        self.colorimeter.configuration.precision if isinstance(numeric_value, (int, float)) else None,
-                        type_tag=type_tag,
-                        talking=self.colorimeter.is_talking
+                        self.colorimeter.measurement_value,
+                        self.colorimeter.configuration.precision,
+                        constants.CHANNEL_TO_STR[self.colorimeter.channel]
                     )
                     if self.colorimeter.is_raw_sensor:
                         self.measure_screen.set_blanked()
@@ -263,18 +195,15 @@ class ScreenManager:
                             self.measure_screen.set_not_blanked()
                         self.measure_screen.clear_gain()
                         self.measure_screen.clear_integration_time()
+                    self.measure_screen.set_channel(self.colorimeter.channel)
                     self.active_screen.show()
                 except MemoryError:
                     self.show_error_message("Memory allocation failed for Measure Screen")
                 except LightSensorOverflow:
-                    self.measure_screen.set_measurement(self.colorimeter.measurement_name, None, "overflow", None)
+                    self.measure_screen.set_overflow(self.colorimeter.measurement_name)
                     self.active_screen.show()
             elif self.colorimeter.mode == Mode.MENU and self.active_screen == self.menu_screen:
                 self.update_menu_screen()
-                self.active_screen.show()
-            elif self.colorimeter.mode == Mode.SETTINGS and self.active_screen == self.settings_screen:
-                self.active_screen.show()
-            elif self.colorimeter.mode == Mode.CONCENTRATION and self.active_screen == self.concentration_screen:
                 self.active_screen.show()
             elif self.colorimeter.mode in (Mode.MESSAGE, Mode.ABORT) and self.active_screen == self.message_screen:
                 self.active_screen.show()
@@ -282,9 +211,7 @@ class ScreenManager:
             mode_to_transition = {
                 Mode.MEASURE: self.transition_to_measure,
                 Mode.MENU: self.transition_to_menu,
-                Mode.SETTINGS: self.transition_to_settings,
-                Mode.CONCENTRATION: self.transition_to_concentration,
-                Mode.MESSAGE: lambda: self.show_message("Mode restored", is_error=False),
+                Mode.MESSAGE: lambda: self.show_error_message("Mode restored"),
                 Mode.ABORT: lambda: self.show_abort_message("Mode restored")
             }
             transition = mode_to_transition.get(self.colorimeter.mode)

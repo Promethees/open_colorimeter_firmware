@@ -14,11 +14,15 @@ class Configuration(JsonSettingsFile):
     LOAD_ERROR_EXCEPTION = ConfigurationError
     ALLOWED_PRECISION = (2,3,4)
     DEFAULT_PRECISION = 2
+    ALLOWED_CHANNEL = ('UVA', 'UVB', 'UVC')
+    DEFAULT_CHANNEL = 'UVC'
 
     def __init__(self):
         super().__init__()
 
     def check(self):
+
+        error_dict = {}
 
         # Check gain
         try:
@@ -53,14 +57,17 @@ class Configuration(JsonSettingsFile):
 
         # Check precision
         self.data.setdefault('precision', self.DEFAULT_PRECISION)
-        try:
-            precision = self.data['precision']
-        except KeyError:
-            pass
-        else:
-            if not precision in self.ALLOWED_PRECISION:
-                error_msg = f'precision must be in{self.ALLOWED_PRECISION}'
-                error_dict['precision'] = error_msg
+        precision = self.data['precision']
+        if not precision in self.ALLOWED_PRECISION: 
+            error_msg = f'precision must be in {self.ALLOWED_PRECISION}'
+            error_dict['precision'] = error_msg
+
+        # Check the channel selection
+        self.data.setdefault('channel', self.DEFAULT_CHANNEL)
+        channel = self.data['channel']
+        if not channel in self.ALLOWED_CHANNEL:
+            error_msg = f'channel must be in {self.ALLOWED_CHANNEL}'
+            error_dict['channel'] = error_msg
 
     @property
     def integration_time(self):
@@ -91,20 +98,11 @@ class Configuration(JsonSettingsFile):
         return self.data['precision']
 
     @property
-    def timeout_value(self):
-        return self.data.get('timeout_value', constants.DEFAULT_TIMEOUT_VALUE)
+    def channel(self):
+        return constants.STR_TO_CHANNEL[self.data['channel']]
 
-    @property
-    def timeout_unit(self):
-        return self.data.get('timeout_unit', constants.DEFAULT_TIMEOUT_UNIT)
 
-    @property
-    def transmission_interval_value(self):
-        return self.data.get('transmission_interval_value', constants.DEFAULT_TRANSMISSION_INTERVAL_VALUE)
 
-    @property
-    def transmission_interval_unit(self):
-        return self.data.get('transmission_interval_unit', constants.DEFAULT_TRANSMISSION_INTERVAL_UNIT)
-    
-    
+            
+            
     

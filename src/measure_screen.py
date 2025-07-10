@@ -13,7 +13,6 @@ class MeasureScreen:
         'header_label',
         'value_label',
         'type_label',
-        'comm_label',
         'blank_label',
         'gain_label',
         'itime_label',
@@ -21,22 +20,16 @@ class MeasureScreen:
         'group'
     ]
 
-    GAIN_LABEL_X_OFFSET = 5  # Left margin for gain label
-    ITIME_LABEL_X_OFFSET = 5  # Right margin offset for itime label
-    TOP_MARGIN = 5  # Margin at top
-    BOTTOM_MARGIN = 5  # Margin at bottom
-    BBOX_HEIGHT_INDEX = 3  # Index for height in bounding_box tuple
-    ITIME_Y_OFFSET = -3  # Vertical offset for itime label alignment
+    TOP_MARGIN = 5
+    BOTTOM_MARGIN = 5
+    GAIN_LABEL_X_OFFSET = 5
+    ITIME_LABEL_X_OFFSET = 5
+    ITIME_Y_OFFSET = -3
+    BBOX_HEIGHT_INDEX = 3
 
-    # Mapping of special messages to colors
     MESSAGE_COLORS = {
         "overflow": "red",
-        "range error": "orange",
-        "comm init": "yellow",  # Alias for comm ready
-        "comm ready": "yellow",
-        "connected": "green",
-        "stopped": "red",
-        " personally": "red"
+        "range error": "orange"
     }
 
     def __init__(self):
@@ -46,20 +39,17 @@ class MeasureScreen:
         self.header_label = None
         self.value_label = None
         self.type_label = None
-        self.comm_label = None
         self.blank_label = None
         self.gain_label = None
         self.itime_label = None
         self.bat_label = None
         self.group = displayio.Group()
 
-        # Setup color palette
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
         for i, (color, rgb) in enumerate(constants.COLOR_TO_RGB.items()):
             self.palette[i] = rgb
 
-        # Create bitmap with reduced height if possible
-        display_height = min(board.DISPLAY.height, 64)  # Cap height to save memory
+        display_height = min(board.DISPLAY.height, 64)
         self.bitmap = displayio.Bitmap(board.DISPLAY.width, display_height, len(constants.COLOR_TO_RGB))
         self.bitmap.fill(0)  # Black
         self.tile_grid = displayio.TileGrid(self.bitmap, pixel_shader=self.palette)
@@ -67,21 +57,19 @@ class MeasureScreen:
         font_scale = 1
         center_x = board.DISPLAY.width // 2
 
-        # Create header label (measurement name)
         self.header_label = label.Label(
             fonts.font_14pt,
-            text="Absorbance",
+            text=constants.ABSORBANCE_STR,
             color=constants.COLOR_TO_RGB["white"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
-            padding_right=40  # Added to limit text buffer size
+            padding_right=40
         )
         self.header_label.anchored_position = (center_x, self.TOP_MARGIN + self.header_label.bounding_box[self.BBOX_HEIGHT_INDEX])
 
-        # Create value label (numeric value, units, or special message)
         self.value_label = label.Label(
             fonts.font_14pt,
-            text="0.00",
+            text="O.OO",
             color=constants.COLOR_TO_RGB["white"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
@@ -89,55 +77,40 @@ class MeasureScreen:
         )
         self.value_label.anchored_position = (center_x, 0)
 
-        # Create type label (type_tag)
         self.type_label = label.Label(
             fonts.font_10pt,
-            text="",
-            color=constants.COLOR_TO_RGB["blue"],
+            text="UVA",
+            color=constants.COLOR_TO_RGB["orange"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
             padding_right=40
         )
         self.type_label.anchored_position = (center_x, 0)
 
-        # Create communication status label
-        self.comm_label = label.Label(
-            fonts.font_10pt,
-            text="",
-            color=constants.COLOR_TO_RGB["green"],
-            scale=font_scale,
-            anchor_point=(0.5, 1.0),
-            padding_right=40
-        )
-        self.comm_label.anchored_position = (center_x, 0)
-
-        # Create blank label
         self.blank_label = label.Label(
             fonts.font_10pt,
             text="initializing",
-            color=constants.COLOR_TO_RGB["orange"],
+            color=constants.COLOR_TO_RGB["purple"],
             scale=font_scale,
             anchor_point=(0.5, 1.0),
             padding_right=40
         )
         self.blank_label.anchored_position = (center_x, 0)
 
-        # Create gain label
         self.gain_label = label.Label(
             fonts.font_10pt,
             text="gain xxx",
-            color=constants.COLOR_TO_RGB["orange"],
+            color=constants.COLOR_TO_RGB["purple"],
             scale=font_scale,
             anchor_point=(0.0, 1.0),
             padding_right=40
         )
         self.gain_label.anchored_position = (self.GAIN_LABEL_X_OFFSET, 0)
 
-        # Create integration time label
         self.itime_label = label.Label(
             fonts.font_10pt,
             text="time xxxms",
-            color=constants.COLOR_TO_RGB["orange"],
+            color=constants.COLOR_TO_RGB["purple"],
             scale=font_scale,
             anchor_point=(0.0, 1.0),
             padding_right=40
@@ -145,7 +118,6 @@ class MeasureScreen:
         itime_x = board.DISPLAY.width // 2 - self.ITIME_LABEL_X_OFFSET
         self.itime_label.anchored_position = (itime_x, 0)
 
-        # Create battery label
         self.bat_label = label.Label(
             fonts.font_10pt,
             text="battery 0.0V",
@@ -156,12 +128,10 @@ class MeasureScreen:
         )
         self.bat_label.anchored_position = (center_x, 0)
 
-        # Add elements to group
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
         self.group.append(self.value_label)
         self.group.append(self.type_label)
-        self.group.append(self.comm_label)
         self.group.append(self.blank_label)
         self.group.append(self.gain_label)
         self.group.append(self.itime_label)
@@ -169,52 +139,17 @@ class MeasureScreen:
 
         gc.collect()
 
-    def clear(self):
-        # Clear displayio resources
-        while len(self.group) > 0:
-            self.group.pop()
-        self.bitmap = None
-        self.palette = None
-        self.tile_grid = None
-        self.header_label = None
-        self.value_label = None
-        self.type_label = None
-        self.comm_label = None
-        self.blank_label = None
-        self.gain_label = None
-        self.itime_label = None
-        self.bat_label = None
-        self.group = displayio.Group()
-        if board.DISPLAY.root_group == self.group:
-            board.DISPLAY.root_group = None
-        gc.collect()
-
-    def set_measurement(self, name, units, value, precision, type_tag=None, talking=False):
-        """Update display with measurement or communication status."""
+    def set_measurement(self, name, units, value, precision, type_tag=None):
         self.header_label.text = name
 
-        # Handle special messages
         if isinstance(value, str) and value in self.MESSAGE_COLORS:
             self.value_label.text = value
             self.value_label.color = constants.COLOR_TO_RGB[self.MESSAGE_COLORS[value]]
             self.type_label.text = ""
-            self.comm_label.text = ""
-        # Handle communication status
-        elif isinstance(value, str):
-            self.value_label.text = ""
-            self.type_label.text = ""
-            self.comm_label.text = value
-            self.comm_label.color = constants.COLOR_TO_RGB[self.MESSAGE_COLORS.get(value, "yellow")]
-        # Handle measurements
         else:
-            if talking:
-                self.comm_label.text = "sending msgs"
-                self.comm_label.color = constants.COLOR_TO_RGB["green"]
-            else:
-                self.comm_label.text = ""
             if value is None:
                 self.value_label.text = "range error"
-                self.value_label.color = constants.COLOR_TO_RGB["orange"]
+                self.value_label.color = constants.COLOR_TO_RGB["purple"]
             else:
                 label_text = f"{value:1.{precision}f}" if isinstance(value, (int, float)) else str(value)
                 if units:
@@ -222,46 +157,64 @@ class MeasureScreen:
                 self.value_label.text = label_text.replace("0", "O")
                 self.value_label.color = constants.COLOR_TO_RGB["white"]
             self.type_label.text = type_tag if (type_tag and type_tag != "None") else ""
-
-        # Position labels
         active_labels, line_count = self._get_active_labels()
         self._position_labels(active_labels, line_count)
 
     def set_not_blanked(self):
         self.blank_label.text = "not blanked"
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def set_blanking(self):
         self.blank_label.text = "blanking"
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def set_blanked(self):
         self.blank_label.text = ""
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def set_gain(self, value):
         self.gain_label.text = f"gain={constants.GAIN_TO_STR[value]}" if value is not None else ""
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def clear_gain(self):
         self.gain_label.text = ""
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def set_integration_time(self, value):
         self.itime_label.text = f"time={constants.INTEGRATION_TIME_TO_STR[value]}" if value is not None else ""
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def clear_integration_time(self):
         self.itime_label.text = ""
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def set_bat(self, value):
         self.bat_label.text = f"battery {value:1.1f}V"
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
+
+    def set_channel(self, channel):
+        self.type_label.text = constants.CHANNEL_TO_STR[channel]
+        # print(f"type label set here is {self.type_label.text}")
+        active_labels, line_count = self._get_active_labels()
+        self._position_labels(active_labels, line_count)
 
     def _get_active_labels(self):
-        """Return list of labels with non-empty text and count of display lines."""
         active_labels = []
         line_count = 0
         labels = [
             self.value_label,
-            self.comm_label,
             self.type_label,
             self.blank_label,
             self.gain_label,
-            self.itime_label,
+            self.itime_label
         ]
         gain_itime_added = False
 
@@ -279,7 +232,6 @@ class MeasureScreen:
         return active_labels, line_count
 
     def _position_labels(self, active_labels, line_count):
-        """Position labels dynamically based on line count."""
         header_height = self.header_label.bounding_box[self.BBOX_HEIGHT_INDEX]
         header_y = self.TOP_MARGIN + header_height
         self.header_label.anchored_position = (self.header_label.anchored_position[0], header_y)
@@ -301,6 +253,7 @@ class MeasureScreen:
 
         current_y = header_y
         gain_itime_positioned = False
+        # print("number of active labels are", len(active_labels))
         for label in active_labels:
             label_height = label.bounding_box[self.BBOX_HEIGHT_INDEX]
             current_y += spacing + label_height
@@ -316,3 +269,21 @@ class MeasureScreen:
     def show(self):
         if self.group:
             board.DISPLAY.root_group = self.group
+
+    def clear(self):
+        while len(self.group) > 0:
+            self.group.pop()
+        self.bitmap = None
+        self.palette = None
+        self.tile_grid = None
+        self.header_label = None
+        self.value_label = None
+        self.type_label = None
+        self.blank_label = None
+        self.gain_label = None
+        self.itime_label = None
+        self.bat_label = None
+        self.group = displayio.Group()
+        if board.DISPLAY.root_group == self.group:
+            board.DISPLAY.root_group = None
+        gc.collect()

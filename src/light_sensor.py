@@ -1,41 +1,27 @@
 import busio
 import board
-import adafruit_tsl2591
-
+import iorodeo_as7331
 
 class LightSensor:
 
-    TSL2591_MAX_COUNT_100MS = 36863  # 0x8FFF
-    TSL2591_MAX_COUNT = 65535        # 0xFFFF
+    AS7331_MAX_COUNT = 2**16 -1
 
-    DEFAULT_GAIN = adafruit_tsl2591.GAIN_MED
-    DEFAULT_INTEGRATION_TIME = adafruit_tsl2591.INTEGRATIONTIME_500MS
+    DEFAULT_GAIN = iorodeo_as7331.GAIN_1024X
+    DEFAULT_INTEGRATION_TIME = iorodeo_as7331.INTEGRATION_TIME_32MS
 
     def __init__(self):
-
-        # Set up light sensor
         i2c = busio.I2C(board.SCL, board.SDA)
         try:
-            self._device = adafruit_tsl2591.TSL2591(i2c)
+            self._device = iorodeo_as7331.AS7331(i2c)
         except ValueError as error:
-            raise LightSensorIOError(error)
-        self.gain = self.DEFAULT_GAIN 
-        self.integration_time = self.DEFAULT_INTEGRATION_TIME 
-        self.channel = 0
+            raise LightSensorIOError(error) 
+
+        self.gain = self.DEFAULT_GAIN
+        self.integration_time = self.DEFAULT_INTEGRATION_TIME
 
     @property
     def max_counts(self):
-        if self.integration_time == adafruit_tsl2591.INTEGRATIONTIME_100MS:
-            return self.TSL2591_MAX_COUNT_100MS 
-        else:
-            return self.TSL2591_MAX_COUNT 
-
-    @property
-    def value(self):
-        value = self._device.raw_luminosity[self.channel]
-        if value >= self.max_counts:
-            raise LightSensorOverflow('light sensor reading > max_counts')
-        return value
+        return self.AS7331_MAX_COUNT
 
     @property
     def gain(self):
@@ -55,6 +41,15 @@ class LightSensor:
         self._integration_time = value
         self._device.integration_time = value
 
+    @property
+    def value(self):
+        return self._device.values
+
+    @property
+    def raw_values(self):
+        return self._device.raw_values
+        #if any([x>self.max_counts for x in raw_values]):
+        #    raise LightSensorOverflow('light sensor reading > max_counts')
 
 class LightSensorOverflow(Exception):
     pass
