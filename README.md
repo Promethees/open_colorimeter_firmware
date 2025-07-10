@@ -45,7 +45,9 @@ your feather development board.
 
 ### Measure
 * How should it look like 
-<img src="/images/Measure.jpeg" width="100">
+<div align="center">
+	<img src="/images/Measure.jpeg" width="100">
+</div>
 
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!
@@ -60,16 +62,22 @@ your feather development board.
 ### Message
 * Has two forms, Press any button to get back to Menu mode.
 	- About 
-	 <img src="/images/About.jpeg" width="100">
+	<div align="center">
+		<img src="/images/About.jpeg" width="100">
+	</div>
 
 	- Error
-	 <img src="/images/Error.jpeg" width="100">
+	<div align="center">
+		<img src="/images/Error.jpeg" width="100">
+	</div>
 
 ### Settings (item 12 in Menu)
 * Usage: to set timeout period for data collection as well as sampling rate.
 * Values: can be initialized by configuration.json: <img src="/images/config.png" width="200">, else will be set by default values in `constants.py` <img src="/images/DefaultTimings.png" width="200">
 * Accessible as he last menu item. Yellow line is the currently chosen values to get modified
-<img src="/images/TimingSettings.jpeg" width="200">
+<div align="center">
+	<img src="/images/TimingSettings.jpeg" width="200">
+</div>
 
 * Buttons: 
 	- `Right`: Switching between 2 selected lines of modification
@@ -81,16 +89,24 @@ your feather development board.
 	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
 * Possible displays:
 	- Settings during modification
-	<img src="/images/settings.png" width="100">
+	<div align="center">
+		<img src="/images/settings.png" width="100">
+	</div>
 
 	- Settings with Infinite timeout (by clicking `B` button)
-	<img src="/images/settings_inf.png" width="100">
+	<div align="center">
+		<img src="/images/settings_inf.png" width="100">
+	</div>
 
 	- Message screen telling settings have been saved
-	<img src="/images/settings_saved.png" width="100">
+	<div align="center">
+		<img src="/images/settings_saved.png" width="100">
+	</div>
 
 	- Message screen telling settings is invalid, discard the set timeout and interval, revert to previously saved ones
-	<img src="/images/settings_error.png" width="100">
+	<div align="center">
+		<img src="/images/settings_error.png" width="100">
+	</div>
 
 ### Concentration (item 10 in Menu)
 * Usage: to let user to send concentration of the measured sample (in unit `nM\l`), if available
@@ -102,13 +118,19 @@ your feather development board.
 	- `Menu`: Save the Concentration value set, get back to Menu
 * Possible displays:
 	- Concentration value during modification
-	<img src="/images/concen.png" width="100">
+	<div align="center">
+		<img src="/images/concen.png" width="100">
+	</div>
 
 	- Concentration value set to `Unknown`
-	<img src="/images/concen_none.png" width="100">
+	<div align="center">
+		<img src="/images/concen_none.png" width="100">
+	</div>
 
 	- Concentration value saved
-	<img src="/images/concen_saved.png" width="100">
+	<div align="center">
+		<img src="/images/concen_saved.png" width="100">
+	</div>
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
@@ -143,8 +165,10 @@ your feather development board.
 
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
-* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter to reboot
-<img src="/images/Reset_button.jpeg" width="100">
+* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter to 
+<div align="center">
+	<img src="/images/Reset_button.jpeg" width="100">
+</div>
 
 * After rebooting, the `code.py` (orifinally `code_check_keyboardHID`) should print out `HID enabled: True`
 * Then, you can use `usb_hid` as usual
@@ -156,7 +180,9 @@ your feather development board.
 Then do the following steps:
 
 - Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode 
-<img src="/images/Pybadgeboot.jpeg" width="100">
+<div align="center">
+	<img src="/images/Pybadgeboot.jpeg" width="100">
+</div>
 
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
 - The display on the Colorimeter should be blank now, double click **Reset** to enter boot mode with ***PYTHONBADGE*** again. Drag `circuitpython 9.uf2` to this drive.
