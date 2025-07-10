@@ -82,7 +82,7 @@ your feather development board.
 	<img src="/images/settings.png" width="100">
 
 	- Settings with Infinite timeout (by clicking `B` button)
-	<img src="/images/settings_inf.jpeg" width="100">
+	<img src="/images/settings_inf.png" width="100">
 
 	- Message screen telling settings have been saved
 	<img src="/images/settings_saved.png" width="100">
