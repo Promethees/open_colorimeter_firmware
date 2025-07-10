@@ -4,6 +4,7 @@ import constants
 import fonts
 from adafruit_display_text import label
 from adafruit_display_text import wrap_text_to_lines
+import gc
 
 class MessageScreen:
     __slots__ = [
