@@ -68,13 +68,16 @@ your feather development board.
 	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
 * Possible displays:
 	- Settings during modification
-	<img src="/images/settings.png" width="200">
+	<img src="/images/settings.png" width="100">
+
 	- Settings with Infinite timeout (by clicking `B` button)
-	<img src="/images/settings_inf.jpeg" width="200">
+	<img src="/images/settings_inf.jpeg" width="100">
+
 	- Message screen telling settings have been saved
-	<img src="/images/settings_saved.png" width="200">
+	<img src="/images/settings_saved.png" width="100">
+
 	- Message screen telling settings is invalid, discard the set timeout and interval, revert to previously saved ones
-	<img src="/images/settings_error.png" width="200">
+	<img src="/images/settings_error.png" width="100">
 
 ### Concentration (item 10 in Menu)
 * Usage: to let user to send concentration of the measured sample (in unit `nM\l`), if available
@@ -86,11 +89,13 @@ your feather development board.
 	- `Menu`: Save the Concentration value set, get back to Menu
 * Possible displays:
 	- Concentration value during modification
-	<img src="/images/concen.jpeg" width="200">
+	<img src="/images/concen.jpeg" width="100">
+
 	- Concentration value set to `Unknown`
-	<img src="/images/concen_non.png" width="200">
+	<img src="/images/concen_non.png" width="100">
+
 	- Concentration value saved
-	<img src="/images/concen_saved.jpeg" width="200">
+	<img src="/images/concen_saved.jpeg" width="100">
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
@@ -134,7 +139,9 @@ your feather development board.
 * In case you have any issue with the **CIRCUITPY** drive (either it's no writtable or not found), you might want to backup data somewhere else.
 Then do the following steps:
 
-- Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode <img src="/images/Pybadgeboot.jpeg" width="100">.
+- Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode 
+<img src="/images/Pybadgeboot.jpeg" width="100">.
+
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
 - The display on the Colorimeter should be blank now, double click **Reset** to enter boot mode with ***PYTHONBADGE*** again. Drag `circuitpython 9.uf2` to this drive.
 - This process helps reset the Drive to default mode (please don't get caught by surprise when you see ***CIRCUITPY*** is now cleaned as new)
