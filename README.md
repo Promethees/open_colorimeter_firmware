@@ -38,7 +38,7 @@ your feather development board.
 ### Menu
 * How should it look like 
 <div align="center"> 
-	<img src="/images/Menu.png" width="100">
+	<img src="/images/Menu.png" width="200">
 </div>
 
 * On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
@@ -46,7 +46,7 @@ your feather development board.
 ### Measure
 * How should it look like 
 <div align="center">
-	<img src="/images/Measure.jpeg" width="100">
+	<img src="/images/Measure.jpeg" width="200">
 </div>
 
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
@@ -63,12 +63,12 @@ your feather development board.
 * Has two forms, Press any button to get back to Menu mode.
 	- About 
 	<div align="center">
-		<img src="/images/About.jpeg" width="100">
+		<img src="/images/About.jpeg" width="200">
 	</div>
 
 	- Error
 	<div align="center">
-		<img src="/images/Error.jpeg" width="100">
+		<img src="/images/Error.jpeg" width="200">
 	</div>
 
 ### Settings (item 12 in Menu)
@@ -90,22 +90,22 @@ your feather development board.
 * Possible displays:
 	- Settings during modification
 	<div align="center">
-		<img src="/images/settings.png" width="100">
+		<img src="/images/settings.png" width="200">
 	</div>
 
 	- Settings with Infinite timeout (by clicking `B` button)
 	<div align="center">
-		<img src="/images/settings_inf.png" width="100">
+		<img src="/images/settings_inf.png" width="200">
 	</div>
 
 	- Message screen telling settings have been saved
 	<div align="center">
-		<img src="/images/settings_saved.png" width="100">
+		<img src="/images/settings_saved.png" width="200">
 	</div>
 
 	- Message screen telling settings is invalid, discard the set timeout and interval, revert to previously saved ones
 	<div align="center">
-		<img src="/images/settings_error.png" width="100">
+		<img src="/images/settings_error.png" width="200">
 	</div>
 
 ### Concentration (item 10 in Menu)
@@ -119,17 +119,17 @@ your feather development board.
 * Possible displays:
 	- Concentration value during modification
 	<div align="center">
-		<img src="/images/concen.png" width="100">
+		<img src="/images/concen.png" width="200">
 	</div>
 
 	- Concentration value set to `Unknown`
 	<div align="center">
-		<img src="/images/concen_none.png" width="100">
+		<img src="/images/concen_none.png" width="200">
 	</div>
 
 	- Concentration value saved
 	<div align="center">
-		<img src="/images/concen_saved.png" width="100">
+		<img src="/images/concen_saved.png" width="200">
 	</div>
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
@@ -167,7 +167,7 @@ your feather development board.
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
 * Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter to 
 <div align="center">
-	<img src="/images/Reset_button.jpeg" width="100">
+	<img src="/images/Reset_button.jpeg" width="200">
 </div>
 
 * After rebooting, the `code.py` (orifinally `code_check_keyboardHID`) should print out `HID enabled: True`
@@ -181,7 +181,7 @@ Then do the following steps:
 
 - Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode 
 <div align="center">
-	<img src="/images/Pybadgeboot.jpeg" width="100">
+	<img src="/images/Pybadgeboot.jpeg" width="200">
 </div>
 
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
