@@ -37,7 +37,9 @@ your feather development board.
 ## Navigation (Adafruit PyBadge/Colorimeter Machine)
 ### Menu
 * How should it look like 
-<img src="/images/Menu.png" width="100">
+<div align="center"> 
+	<img src="/images/Menu.png" width="100">
+</div>
 
 * On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
 
