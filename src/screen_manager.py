@@ -81,8 +81,8 @@ class ScreenManager:
         self.clear_all_screens()
         self.menu_screen = self._try_allocate(MenuScreen, "Memory allocation failed for MenuScreen")
         if self.menu_screen:
-            self.colorimeter.menu_view_pos = 0
-            self.colorimeter.menu_item_pos = self.colorimeter.menu_items.index(self.colorimeter.measurement_name)
+            # self.colorimeter.menu_view_pos = 0
+            # self.colorimeter.menu_item_pos = self.colorimeter.menu_items.index(self.colorimeter.measurement_name)
             self.update_menu_screen()
         self.active_screen = self.menu_screen
 
