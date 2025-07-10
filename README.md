@@ -56,8 +56,8 @@ your feather development board.
 
 ### Settings (item 12 in Menu)
 * Usage: to set timeout period for data collection as well as sampling rate.
-* Values: can be initialized by configuration.json: ![](/images/config.png), else will be set by default values in `constants.py` ![](/images/DefaultTimings.png)
-* Accessible as he last menu item. Layout: ![](/images/TimingSettings.jpeg). Yellow line is the currently chosen values to get modified
+* Values: can be initialized by configuration.json: <img src="/images/config.png" width="200">, else will be set by default values in `constants.py` <img src="/images/DefaultTimings.png" width="200">
+* Accessible as he last menu item. Layout: <img src="/images/TimingSettings.jpeg" width="200">. Yellow line is the currently chosen values to get modified
 * Buttons: 
 	- `Right`: Switching between 2 selected lines of modification
 	- `Up/Down`: Increase/Decrease the value of the current line (for units `min`, `hour`, step is 1; for `sec`, step is 10)
@@ -68,13 +68,13 @@ your feather development board.
 	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
 * Possible displays:
 	- Settings during modification
-	![](/images/settings.png)
+	<img src="/images/settings.png" width="200">
 	- Settings with Infinite timeout (by clicking `B` button)
-	![](/images/settings_inf.jpeg)
+	<img src="/images/settings_inf.jpeg" width="200">
 	- Message screen telling settings have been saved
-	![](/images/settings_saved.png)
+	<img src="/images/settings_saved.png" width="200">
 	- Message screen telling settings is invalid, discard the set timeout and interval, revert to previously saved ones
-	![](/images/settings_error.png)
+	<img src="/images/settings_error.png" width="200">
 
 ### Concentration (item 10 in Menu)
 * Usage: to let user to send concentration of the measured sample (in unit `nM\l`), if available
@@ -86,11 +86,11 @@ your feather development board.
 	- `Menu`: Save the Concentration value set, get back to Menu
 * Possible displays:
 	- Concentration value during modification
-	![](/images/concen.jpeg)
+	<img src="/images/concen.jpeg" width="200">
 	- Concentration value set to `Unknown`
-	![](/images/concen_non.png)
+	<img src="/images/concen_non.png" width="200">
 	- Concentration value saved
-	![](/images/concen_saved.jpeg)
+	<img src="/images/concen_saved.jpeg" width="200">
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
