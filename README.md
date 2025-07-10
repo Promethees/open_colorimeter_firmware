@@ -36,11 +36,15 @@ your feather development board.
 
 ## Navigation (Adafruit PyBadge/Colorimeter Machine)
 ### Menu
-* How should it look like <img src="/images/Menu.jpeg" width="100">. 
+* How should it look like 
+<img src="/images/Menu.jpeg" width="100">
+
 * On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
 
 ### Measure
-* How should it look like <img src="/images/Measure.jpeg" width="100">.
+* How should it look like 
+<img src="/images/Measure.jpeg" width="100">.
+
 * Define and modify the setup parameters for this mode in `calibrations.json`. 
 * Left button is designated to send data to the host machine, ***BEFORE*** attempt to do so, please read the rest of this passage thoroughly!
 
@@ -52,12 +56,19 @@ your feather development board.
 	- Execute `log_hid_data.py` (follow the instruction below) to prevent the aformentioned phenomenon and save data to desired location on your computer in csv format.
 
 ### Message
-* Has two forms, About <img src="/images/About.jpeg" width="100"> and Error <img src="/images/Error.jpeg" width="100">. Press any button to get back to Menu mode.
+* Has two forms, Press any button to get back to Menu mode.
+	- About 
+	 <img src="/images/About.jpeg" width="100">
+
+	- Error
+	 <img src="/images/Error.jpeg" width="100">
 
 ### Settings (item 12 in Menu)
 * Usage: to set timeout period for data collection as well as sampling rate.
 * Values: can be initialized by configuration.json: <img src="/images/config.png" width="200">, else will be set by default values in `constants.py` <img src="/images/DefaultTimings.png" width="200">
-* Accessible as he last menu item. Layout: <img src="/images/TimingSettings.jpeg" width="200">. Yellow line is the currently chosen values to get modified
+* Accessible as he last menu item. Yellow line is the currently chosen values to get modified
+<img src="/images/TimingSettings.jpeg" width="200">
+
 * Buttons: 
 	- `Right`: Switching between 2 selected lines of modification
 	- `Up/Down`: Increase/Decrease the value of the current line (for units `min`, `hour`, step is 1; for `sec`, step is 10)
@@ -99,7 +110,8 @@ your feather development board.
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
-* Now is available to execute on the web interface so this step becomes ***optional***
+* Now is available to execute on the web interface so this step becomes ***optional***. 
+* The purpose of the following instruction is mostly to quickly verify if dependencies have been correctly installed, as instructed under `Setup and Usage` section of the [Web Interface](https://github.com/Promethees/microalbumin-Flask/blob/main/README.md)
 
 ### MacOS
 * Compile the code by: `chmod +x log_hid_data.py`, then run with administrator right (important!) 
@@ -113,7 +125,7 @@ your feather development board.
 - You stop, then press again, `log_hid_data.py` will automatically knows to rename the saving file to avoid overwritten (hello_1 instead of hello_0) <img src="/images/secondLocation.png">
 
 ### Windows 
-* Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
+* Open **Start** Menu, type `cmd`, right click > "Run as Administrator", key in `cd C:\Path\To\Your\Script`. Execute by `python log_hid_data_pyusb.py` to save to `data` with filename format of `colorimeter_data_xx.csv`
 * `python log_hid_data.py --base-dir <> --base-name <>` to specify your desired location and naming convention.
 
 ### Changing Transmission interval and data recording time (Adafruit PyBadge)
