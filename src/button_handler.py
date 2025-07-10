@@ -107,7 +107,7 @@ class ButtonHandler:
             self.colorimeter.channel = next(self.colorimeter.channel_cycle)
 
     def _handle_menu_mode(self, buttons):
-        if self.menu_button_pressed(buttons) or self.right_button_pressed(buttons):
+        if self.menu_button_pressed(buttons) or self.right_button_pressed(buttons) or self.channel_button_pressed(buttons):
             selected_item = self.colorimeter.menu_items[self.colorimeter.menu_item_pos]
             if selected_item == constants.ABOUT_STR:
                 self.colorimeter.screen_manager.show_about_message(f"firmware version {constants.__version__}")
