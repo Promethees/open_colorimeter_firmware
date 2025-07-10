@@ -141,7 +141,9 @@ your feather development board.
 
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
-* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter <img src="/images/Reset_button.jpeg" width="100"> to reboot
+* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter to reboot
+<img src="/images/Reset_button.jpeg" width="100">
+
 * After rebooting, the `code.py` (orifinally `code_check_keyboardHID`) should print out `HID enabled: True`
 * Then, you can use `usb_hid` as usual
 
@@ -152,7 +154,7 @@ your feather development board.
 Then do the following steps:
 
 - Double click on **Reset** button (at the behind of the colorimeter) to enter boot mode 
-<img src="/images/Pybadgeboot.jpeg" width="100">.
+<img src="/images/Pybadgeboot.jpeg" width="100">
 
 - In boot mode, a drive called ***PYTHONBADGE*** will appear instead of ***CIRCUITPY***. Drag `PyBadge_QSPI_Eraser.UF2` to this drive. 
 - The display on the Colorimeter should be blank now, double click **Reset** to enter boot mode with ***PYTHONBADGE*** again. Drag `circuitpython 9.uf2` to this drive.
