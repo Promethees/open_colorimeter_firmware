@@ -34,7 +34,7 @@ your feather development board.
 
 * See installation guide from [microalbumin-Flask](https://github.com/Promethees/microalbumin-Flask)
 
-## Navigation (Adafruit PyBadge)
+## Navigation (Adafruit PyBadge/Colorimeter Machine)
 ### Menu
 * How should it look like <img src="/images/Menu.jpeg" width="100">. 
 * On the Colorimeter Device, use Up, Down buttons to navigate, Menu (white button on the top left), Left and Right to select the respective item.
@@ -54,10 +54,10 @@ your feather development board.
 ### Message
 * Has two forms, About <img src="/images/About.jpeg" width="100"> and Error <img src="/images/Error.jpeg" width="100">. Press any button to get back to Menu mode.
 
-### Settings
+### Settings (item 12 in Menu)
 * Usage: to set timeout period for data collection as well as sampling rate.
-* Values: can be initialized by configuration.json: [](/images/config.png), else will be set by default values in `constants.py` [](/images/DefaultTimings.png)
-* Accessible as he last menu item. Layout: [](/images/TimingSettings.jpeg). Yellow line is the currently chosen values to get modified
+* Values: can be initialized by configuration.json: ![](/images/config.png), else will be set by default values in `constants.py` ![](/images/DefaultTimings.png)
+* Accessible as he last menu item. Layout: ![](/images/TimingSettings.jpeg). Yellow line is the currently chosen values to get modified
 * Buttons: 
 	- `Right`: Switching between 2 selected lines of modification
 	- `Up/Down`: Increase/Decrease the value of the current line (for units `min`, `hour`, step is 1; for `sec`, step is 10)
@@ -66,6 +66,31 @@ your feather development board.
 	- `Blank`: Discard all the changes made, remain in Settings
 	- `A`: Change the units of the selected line
 	- `B`: Set `Timeout value` to `Infinite` (so ```self.timeout_value = None```)
+* Possible displays:
+	- Settings during modification
+	![](/images/settings.png)
+	- Settings with Infinite timeout (by clicking `B` button)
+	![](/images/settings_inf.jpeg)
+	- Message screen telling settings have been saved
+	![](/images/settings_saved.png)
+	- Message screen telling settings is invalid, discard the set timeout and interval, revert to previously saved ones
+	![](/images/settings_error.png)
+
+### Concentration (item 10 in Menu)
+* Usage: to let user to send concentration of the measured sample (in unit `nM\l`), if available
+* Buttons:
+	- `Up/Down`: Value +- `1`
+	- `Right/Left`: Value +- `10`
+	- `A/B` : Value +- `100`
+	- `Blank`: Set value to `Unknown`
+	- `Menu`: Save the Concentration value set, get back to Menu
+* Possible displays:
+	- Concentration value during modification
+	![](/images/concen.jpeg)
+	- Concentration value set to `Unknown`
+	![](/images/concen_non.png)
+	- Concentration value saved
+	![](/images/concen_saved.jpeg)
 
 ## Running *log_hid_data.py* to record the data sent from PyBadge (Hosting System)
 * Data recorded will be saved in `\data` folder by default
@@ -91,7 +116,7 @@ your feather development board.
 * After changing them, and save the file, PyBadge'll automatically load these changes to the code
 
 ### (Optional) Syncing in real-time read data to Google Drive.
-* Download Google Drive Desktop application from [](https://support.google.com/a/users/answer/13022292?hl=en)
+* Download Google Drive Desktop application from [https://support.google.com/a/users/answer/13022292?hl=en](https://support.google.com/a/users/answer/13022292?hl=en)
 * Create an empty folder on local computer to host the synced folder to Google Drive.
 * Open Google Drive Desktop applications, sign in, select **Settings** (the Gear Icon) > **Preferences**. We now have **Google Drive Preferences** panel opening <img src="/images/Drive_Preferences.png" width="200">. Select **Add Folder** to select the just created empty Folder for syncing. 
 * Retrieving directory name of the synced folder: On Windows, open it in File Explorer, get the path on the File Browser search bar. On Mac, locate the folder in **Finder**, right click on the folder, go to "Services" (last row)> "New Terminal at Folder", type ```pwd``` in the Terminal to get the path.
