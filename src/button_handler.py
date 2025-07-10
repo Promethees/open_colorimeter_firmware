@@ -29,6 +29,9 @@ class ButtonHandler:
     def right_button_pressed(self, buttons):
         return 'right' in buttons
 
+    def left_button_pressed(self, buttons):
+        return 'left' in buttons
+
     def norm_button_pressed(self, buttons):
         return 'norm' in buttons
 
@@ -104,7 +107,7 @@ class ButtonHandler:
                 self.colorimeter.measurement.update_norm_sample()
 
     def _handle_menu_mode(self, buttons):
-        if self.menu_button_pressed(buttons) or self.right_button_pressed(buttons):
+        if self.menu_button_pressed(buttons) or self.right_button_pressed(buttons) or self.left_button_pressed(buttons):
             selected_item = self.colorimeter.menu_items[self.colorimeter.menu_item_pos]
             if selected_item == self.colorimeter.ABOUT_STR:
                 self.colorimeter.screen_manager.show_about_message(f"firmware version {constants.__version__}")
