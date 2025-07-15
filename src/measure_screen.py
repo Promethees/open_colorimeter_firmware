@@ -3,12 +3,25 @@ import displayio
 import constants
 import fonts
 from adafruit_display_text import label
-
+import gc
 
 class MeasureScreen:
+    __slots__ = [
+        'color_to_index',
+        'palette',
+        'bitmap',
+        'tile_grid',
+        'header_label',
+        'value_label',
+        'blank_label',
+        'gain_label',
+        'itime_label',
+        'bat_label',
+        'group'
+    ]
 
     HEADER_LABEL_Y_SPACING = 18 
-    VALUE_LABEL_Y_SPACING =  16  
+    VALUE_LABEL_Y_SPACING = 16  
     BLANK_LABEL_Y_SPACING = 14  
     GAIN_LABEL_X_SPACING = 3      
     ITIME_LABEL_X_SPACING = 15      
@@ -17,7 +30,6 @@ class MeasureScreen:
     BATTERY_LABEL_X_POSITION = 10      
 
     def __init__(self):
-
         # Setup color palette
         self.color_to_index = {k:i for (i,k) in enumerate(constants.COLOR_TO_RGB)}
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
@@ -31,7 +43,7 @@ class MeasureScreen:
                 len(constants.COLOR_TO_RGB)
                 )
         self.bitmap.fill(self.color_to_index['black'])
-        self.tile_grid = displayio.TileGrid(self.bitmap,pixel_shader=self.palette)
+        self.tile_grid = displayio.TileGrid(self.bitmap, pixel_shader=self.palette)
         font_scale = 1
 
         # Create header text label
@@ -93,8 +105,8 @@ class MeasureScreen:
                 anchor_point = (0.0,1.0),
                 )
         gain_bbox = self.gain_label.bounding_box
-        gain_label_x  = self.GAIN_LABEL_X_SPACING
-        gain_label_y  = value_label_y + gain_bbox[3] 
+        gain_label_x = self.GAIN_LABEL_X_SPACING
+        gain_label_y = value_label_y + gain_bbox[3] 
         gain_label_y += self.GAIN_ITIME_LABELS_Y_SPACING 
         self.gain_label.anchored_position = (gain_label_x, gain_label_y)
 
@@ -110,14 +122,13 @@ class MeasureScreen:
                 anchor_point = (0.0,1.0),
                 )
         itime_bbox = self.itime_label.bounding_box
-        itime_label_x  = gain_label_x + gain_bbox[2] 
+        itime_label_x = gain_label_x + gain_bbox[2] 
         itime_label_x += self.ITIME_LABEL_X_SPACING
-        itime_label_y  = value_label_y + itime_bbox[3] 
+        itime_label_y = value_label_y + itime_bbox[3] 
         itime_label_y += self.GAIN_ITIME_LABELS_Y_SPACING 
         self.itime_label.anchored_position = (itime_label_x, itime_label_y)
 
         # Create integration time/window text label
-        #bat_str = 'battery 100%'
         bat_str = 'battery 0.0V'
         text_color = constants.COLOR_TO_RGB['gray']
         self.bat_label = label.Label(
@@ -132,7 +143,7 @@ class MeasureScreen:
         bat_label_y = blank_label_y + bbox[3] + self.BATTERY_LABEL_Y_SPACING 
         self.bat_label.anchored_position = (bat_label_x, bat_label_y)
         
-        # Ceate display group and add items to it
+        # Create display group and add items to it
         self.group = displayio.Group()
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
@@ -141,6 +152,25 @@ class MeasureScreen:
         self.group.append(self.gain_label)
         self.group.append(self.itime_label)
         self.group.append(self.bat_label)
+
+    def clear(self):
+        # Clear displayio resources
+        while len(self.group) > 0:
+            self.group.pop()
+        self.bitmap = None
+        self.palette = None
+        self.tile_grid = None
+        self.header_label = None
+        self.value_label = None
+        self.blank_label = None
+        self.gain_label = None
+        self.itime_label = None
+        self.bat_label = None
+        self.color_to_index = None
+        self.group = displayio.Group()
+        if board.DISPLAY.root_group == self.group:
+            board.DISPLAY.root_group = None
+        gc.collect()
 
     def set_measurement(self, name, units, value):
         if value is None:
@@ -173,7 +203,7 @@ class MeasureScreen:
     def set_blanked(self):
         self.blank_label.text = ''
 
-    def set_gain(self,value):
+    def set_gain(self, value):
         if value is not None:
             value_str = constants.GAIN_TO_STR[value]
             self.gain_label.text = f'gain={value_str}'
@@ -183,7 +213,7 @@ class MeasureScreen:
     def clear_gain(self):
         self.set_gain(None)
 
-    def set_integration_time(self,value):
+    def set_integration_time(self, value):
         if value is not None:
             value_str = constants.INTEGRATION_TIME_TO_STR[value]
             self.itime_label.text = f'time={value_str}'
@@ -198,4 +228,3 @@ class MeasureScreen:
 
     def show(self):
         board.DISPLAY.root_group = self.group
-
