@@ -35,11 +35,16 @@ class SerialManager:
                 self.colorimeter.screen_manager.set_error_message(f"HID setup error: {e}")
                 self.colorimeter.is_talking = False
                 return
-
-        self.colorimeter.screen_manager.measure_screen.set_measurement(
-            self.colorimeter.measurement_name, None, "comm init", None, talking=self.colorimeter.is_talking)
-        self.colorimeter.screen_manager.measure_screen.show()
-        self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
+        try:
+            self.colorimeter.screen_manager.measure_screen.set_measurement(
+                self.colorimeter.measurement_name, None, "comm init", None, talking=self.colorimeter.is_talking)
+            self.colorimeter.screen_manager.measure_screen.show()
+            self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
+        except OSError as e:
+            self.colorimeter.screen_manager.show_message("Run script not started", is_error=True)
+            self.colorimeter.is_talking = False
+            self.colorimeter.serial_connected = False
+            return
 
         if self.colorimeter.serial_start_time is None:
             self.colorimeter.serial_start_time = time.monotonic() + constants.CONNECTION_WAIT_TIME
