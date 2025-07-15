@@ -24,7 +24,7 @@ class ConcentrationScreen:
 
     def __init__(self, concen_val=None):
         self.group = displayio.Group()
-        self.con_unit = " mg/L"
+        self.con_unit = " ng/µL"
         self.concen_val = concen_val
         self.palette = None
         self.bitmap = None

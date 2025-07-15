@@ -14,7 +14,7 @@
     }
   },
   "FD&C Blue 1": {
-    "units": "mg/L",
+    "units": "ng/µL",
     "led": "630",
     "fit_type": "polynomial",
     "fit_coef": [
