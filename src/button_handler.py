@@ -180,9 +180,9 @@ class ButtonHandler:
             self.colorimeter.concentration = self.colorimeter.screen_manager.get_concentration_value()
             self.colorimeter.to_use_gain_asB = False
             if self.colorimeter.concentration is not None:
-                self.colorimeter.screen_manager.show_message(f"Concentration saved: {self.colorimeter.concentration} nM/l", is_error=False)
+                self.colorimeter.screen_manager.show_message(f"Concentration saved: {self.colorimeter.concentration} mg/L", is_error=False)
             else:
-                self.colorimeter.screen_manager.show_message(f"Concentration saved: None nM/l", is_error=False)
+                self.colorimeter.screen_manager.show_message(f"Concentration saved: None mg/L", is_error=False)
         elif self.blank_button_pressed(buttons):
             self.colorimeter.screen_manager.set_concentration_to_none()
         elif self.up_button_pressed(buttons):
