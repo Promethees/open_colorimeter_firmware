@@ -81,7 +81,7 @@ class SerialManager:
                     self.colorimeter.last_transmission_time = current_time
                     blanked = "True" if self.colorimeter.is_blanked else "False"
                     relative_time = 1 - relative_time if relative_time < 0 else relative_time
-                    data_str = f"{relative_time:.2f},{self.colorimeter.measurement_name.replace(" ","")},{numeric_value:.2f},{units.replace(" ","")},{type_tag.replace(" ","")},{blanked},{concen_val}\n"
+                    data_str = f"{relative_time:.2f},{self.colorimeter.measurement_name.replace(" ","")},{numeric_value:.{self.colorimeter.configuration.precision}f},{units.replace(" ","")},{type_tag.replace(" ","")},{blanked},{concen_val}\n"
                     self.layout.write(data_str)
             except MemoryError:
                 self.colorimeter.screen_manager.set_error_message("Memory allocation failed for Measure Screen")

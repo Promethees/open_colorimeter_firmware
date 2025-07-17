@@ -6,5 +6,6 @@
   "timeout_value": 20,
   "timeout_unit": "min",
   "transmission_interval_value": 1,
-  "transmission_interval_unit": "min"
+  "transmission_interval_unit": "min",
+  "precision" : 3,
 } 
