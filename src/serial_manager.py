@@ -60,7 +60,7 @@ class SerialManager:
             time.sleep(0.1)
 
     def handle_serial_communication(self):
-        if self.colorimeter.mode == Mode.MEASURE and self.colorimeter.is_talking and self.colorimeter.serial_connected and self.keyboard and self.layout:
+        if self.colorimeter.mode == Mode.MEASURE and self.colorimeter.is_talking and self.colorimeter.serial_connected and self.keyboard and self.layout and self.colorimeter.serial_start_time:
             try:
                 numeric_value, type_tag = self.colorimeter.measurement_value
                 units = self.colorimeter.measurement_units or "None"
@@ -74,11 +74,13 @@ class SerialManager:
                         self.colorimeter.timeout_value, self.colorimeter.timeout_unit)
                     if timeout_seconds and relative_time > timeout_seconds:
                         self.colorimeter.is_talking = False
+                        self.colorimeter.serial_start_time = None
                 transmission_interval_seconds = self.colorimeter._convert_to_seconds(
                     self.colorimeter.transmission_interval_value, self.colorimeter.transmission_interval_unit)
                 if current_time - self.colorimeter.last_transmission_time >= transmission_interval_seconds:
                     self.colorimeter.last_transmission_time = current_time
                     blanked = "True" if self.colorimeter.is_blanked else "False"
+                    relative_time = 1 - relative_time if relative_time < 0 else relative_time
                     data_str = f"{relative_time:.2f},{self.colorimeter.measurement_name.replace(" ","")},{numeric_value:.2f},{units.replace(" ","")},{type_tag.replace(" ","")},{blanked},{concen_val}\n"
                     self.layout.write(data_str)
             except MemoryError:
