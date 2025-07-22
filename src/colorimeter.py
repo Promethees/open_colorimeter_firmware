@@ -103,6 +103,7 @@ class Colorimeter:
         self.transmission_interval_value = None
         self.transmission_interval_unit = None
         self.measurement_name = None
+        self.serial_count = 0
 
         # Setup managers
         self.screen_manager = ScreenManager(self)

@@ -99,6 +99,8 @@ class ButtonHandler:
                 self.colorimeter.is_blanked = False
                 self.colorimeter.screen_manager.set_not_blanked()
         elif self.left_button_pressed(buttons):
+            if (self.colorimeter.serial_count > 0):
+                self.colorimeter.serial_count = 0
             self.colorimeter.serial_manager.serial_talking(not self.colorimeter.is_talking)
         elif self.menu_button_pressed(buttons):
             self.colorimeter.mode = Mode.MENU
