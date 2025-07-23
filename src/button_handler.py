@@ -60,10 +60,6 @@ class ButtonHandler:
             if event.pressed:
                 button_name = self.colorimeter.button_map.get(event.key_number)
                 if button_name:
-                    if self.colorimeter.mode == Mode.MEASURE and button_name in ('right', 'down', 'up'):
-                        continue
-                    if self.colorimeter.mode == Mode.MENU and button_name in ('blank', 'gain', 'itime'):
-                        continue
                     pressed_buttons.add(button_name)
 
         if not pressed_buttons or not self.check_debounce():
@@ -135,7 +131,6 @@ class ButtonHandler:
                 self.colorimeter.measurement_name = selected_item
                 self.colorimeter.to_use_gain_asB = False
                 self.colorimeter.mode = Mode.MEASURE
-                self.colorimeter.screen_manager.transition_to_measure()
                 self.colorimeter.screen_manager.transition_to_measure(selected_item == 'Raw Sensor')
         elif self.up_button_pressed(buttons):
             self.decr_menu_item_pos()
