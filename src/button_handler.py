@@ -96,6 +96,7 @@ class ButtonHandler:
                     return
                 self.colorimeter.screen_manager.set_blanked()
             else:
+                self.colorimeter.blank_sensor(False)
                 self.colorimeter.is_blanked = False
                 self.colorimeter.screen_manager.set_not_blanked()
         elif self.left_button_pressed(buttons):
