@@ -102,6 +102,8 @@ class ButtonHandler:
         elif self.left_button_pressed(buttons):
             if (self.colorimeter.serial_count > 0):
                 self.colorimeter.serial_count = 0
+            if (not self.colorimeter.is_talking):
+                self.colorimeter.last_transmission_time = 0
             self.colorimeter.serial_manager.serial_talking(not self.colorimeter.is_talking)
         elif self.menu_button_pressed(buttons):
             self.colorimeter.mode = Mode.MENU
