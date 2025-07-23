@@ -80,12 +80,12 @@ class ScreenManager:
         self.message_screen = None
         gc.collect()
 
-    def transition_to_measure(self):
+    def transition_to_measure(self, raw_sensor=False):
         if self.colorimeter.mode != Mode.MEASURE:
             return
         if not self.measure_screen:
             self.clear_all_screens()
-            self.measure_screen = self._try_allocate(MeasureScreen, "Memory allocation failed for MeasureScreen")
+            self.measure_screen = self._try_allocate(MeasureScreen, "Memory allocation failed for MeasureScreen", raw_sensor=raw_sensor)
             if self.measure_screen and self.colorimeter.is_blanked:
                 self.measure_screen.set_blanked()
         self.active_screen = self.measure_screen

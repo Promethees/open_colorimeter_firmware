@@ -136,6 +136,7 @@ class ButtonHandler:
                 self.colorimeter.to_use_gain_asB = False
                 self.colorimeter.mode = Mode.MEASURE
                 self.colorimeter.screen_manager.transition_to_measure()
+                self.colorimeter.screen_manager.transition_to_measure(selected_item == 'Raw Sensor')
         elif self.up_button_pressed(buttons):
             self.decr_menu_item_pos()
         elif self.down_button_pressed(buttons):

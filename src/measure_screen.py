@@ -39,7 +39,7 @@ class MeasureScreen:
         " personally": "red"
     }
 
-    def __init__(self):
+    def __init__(self, raw_sensor=False):
         self.palette = None
         self.bitmap = None
         self.tile_grid = None
@@ -51,6 +51,7 @@ class MeasureScreen:
         self.gain_label = None
         self.itime_label = None
         self.bat_label = None
+        self.raw_sensor = raw_sensor
         self.group = displayio.Group()
 
         # Setup color palette
@@ -162,9 +163,11 @@ class MeasureScreen:
         self.group.append(self.value_label)
         self.group.append(self.type_label)
         self.group.append(self.comm_label)
-        self.group.append(self.blank_label)
-        self.group.append(self.gain_label)
-        self.group.append(self.itime_label)
+        if (not raw_sensor):
+            self.group.append(self.blank_label)
+        else:
+            self.group.append(self.gain_label)
+            self.group.append(self.itime_label)
         self.group.append(self.bat_label)
 
         gc.collect()
@@ -180,9 +183,11 @@ class MeasureScreen:
         self.value_label = None
         self.type_label = None
         self.comm_label = None
-        self.blank_label = None
-        self.gain_label = None
-        self.itime_label = None
+        if (not self.raw_sensor):
+            self.blank_label = None
+        else:
+            self.gain_label = None
+            self.itime_label = None
         self.bat_label = None
         self.group = displayio.Group()
         if board.DISPLAY.root_group == self.group:
@@ -257,12 +262,14 @@ class MeasureScreen:
         line_count = 0
         labels = [
             self.value_label,
-            self.comm_label,
-            self.type_label,
-            self.blank_label,
-            self.gain_label,
-            self.itime_label,
+            self.type_label, 
+            self.comm_label       
         ]
+        if self.raw_sensor:
+            labels.append(self.gain_label)
+            labels.append(self.itime_label)
+        else:
+            labels.append(self.blank_label)
         gain_itime_added = False
 
         for label in labels:
