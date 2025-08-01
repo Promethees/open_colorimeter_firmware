@@ -1,6 +1,7 @@
 import time
 import gc
 import usb_hid
+import usb_cdc
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 import constants
@@ -11,8 +12,10 @@ class SerialManager:
         self.colorimeter = colorimeter
         self.keyboard = None
         self.layout = None
+        self.serial = usb_cdc.data
+        self.buffer = b""
 
-    def serial_talking(self, set_talking=True):
+    def serial_talking(self, set_talking=True, start_by_host=False):
         if not set_talking:
             self.colorimeter.is_talking = False
             self.colorimeter.serial_connected = False
@@ -39,6 +42,8 @@ class SerialManager:
             self.colorimeter.screen_manager.measure_screen.set_measurement(
                 self.colorimeter.measurement_name, None, "comm init", None, talking=self.colorimeter.is_talking)
             self.colorimeter.screen_manager.measure_screen.show()
+            if (start_by_host):
+                time.sleep(5)
             self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
         except OSError as e:
             self.colorimeter.screen_manager.show_message("Run script not started", is_error=True)
@@ -60,6 +65,22 @@ class SerialManager:
             time.sleep(0.1)
 
     def handle_serial_communication(self):
+        # Check for incoming serial commands
+        if self.serial.in_waiting:
+            self.buffer += self.serial.read(self.serial.in_waiting)
+            if b"\n" in self.buffer:
+                lines = self.buffer.split(b"\n")
+                for line in lines[:-1]:
+                    command = line.decode().strip()
+                    if command == "1":
+                        self.serial.write(b"ACK_START\n")
+                        self.serial_talking(True, True)
+                    elif command == "0":
+                        self.serial.write(b"ACK_STOP\n")
+                        self.serial_talking(False, True)
+                self.buffer = lines[-1]  # Save incomplete data
+
+        # Existing measurement data transmission
         if self.colorimeter.mode == Mode.MEASURE and self.colorimeter.is_talking and self.colorimeter.serial_connected and self.keyboard and self.layout and self.colorimeter.serial_start_time:
             try:
                 numeric_value, type_tag = self.colorimeter.measurement_value
@@ -82,9 +103,9 @@ class SerialManager:
                     self.colorimeter.last_transmission_time = current_time
                     blanked = "True" if self.colorimeter.is_blanked else "False"
                     relative_time = 1 - relative_time if relative_time < 0 else relative_time
-                    written_time = transmission_interval_seconds * self.colorimeter.serial_count if transmission_interval_seconds !=0 else relative_time
+                    written_time = transmission_interval_seconds * self.colorimeter.serial_count if transmission_interval_seconds != 0 else relative_time
                     self.colorimeter.serial_count += 1
-                    data_str = f"{written_time:.2f},{self.colorimeter.measurement_name.replace(" ","")},{numeric_value:.{self.colorimeter.configuration.precision}f},{units.replace(" ","")},{type_tag.replace(" ","")},{blanked},{concen_val}\n"
+                    data_str = f"{written_time:.2f},{self.colorimeter.measurement_name.replace(' ', '')},{numeric_value:.{self.colorimeter.configuration.precision}f},{units.replace(' ', '')},{type_tag.replace(' ', '')},{blanked},{concen_val}\n"
                     self.layout.write(data_str)
             except MemoryError:
                 self.colorimeter.screen_manager.set_error_message("Memory allocation failed for Measure Screen")
