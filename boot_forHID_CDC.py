@@ -11,4 +11,4 @@ keyboard = Keyboard(usb_hid.devices)
 layout = KeyboardLayoutUS(keyboard)
 usb_hid.enable((keyboard,))
 import usb_cdc
-usb_cdc.enable(console=True, data=True)
+usb_cdc.enable(console=False, data=True)

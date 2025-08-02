@@ -165,13 +165,16 @@ your feather development board.
 
 ## Checking `usb_hid` availability (Adafruit PyBadge)
 * Rename `code_check_keyboardHID.py` to `code.py`. If on the screen print out `HID enabled: True`, this means the `usb_hid` is available.
-* Otherwise, rename `boot_forHID.py` to `boot.py`. Click on Reset button behind the Colorimeter to 
+* Otherwise, rename `boot_forHID_CDC.py` to `boot.py`. Click on Reset button behind the Colorimeter to 
 <div align="center">
 	<img src="/images/Reset_button.jpeg" width="200">
 </div>
 
 * After rebooting, the `code.py` (orifinally `code_check_keyboardHID`) should print out `HID enabled: True`
 * Then, you can use `usb_hid` as usual
+
+## Disable `usb_cdc` Console, enable `usb_cdc` Data 
+* Test: Use `code_check_serial_com.py` as `code.py` on PyBadge, `test_com.py` on Host Computer to make sure computer can send commands to the PyBadge (if not working, use `boot_forHID_CDC.py` as `boot.py` to reboot). 
 
 ## Debug (Adafruit PyBadge)
 <img src="images/important.svg" alt="IMPORTANT!!!">
