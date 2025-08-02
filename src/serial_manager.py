@@ -77,6 +77,7 @@ class SerialManager:
                         self.serial_talking(True, True)
                     elif command == "0":
                         self.serial.write(b"ACK_STOP\n")
+                        self.colorimeter.serial_count = 0
                         self.serial_talking(False, True)
                 self.buffer = lines[-1]  # Save incomplete data
 
