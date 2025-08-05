@@ -14,6 +14,9 @@ class SerialManager:
         self.layout = None
         self.serial = usb_cdc.data
         self.buffer = b""
+        # Session-specific overrides
+        self.session_timeout_seconds = None
+        self.session_transmission_interval_seconds = None
 
     def serial_talking(self, set_talking=True, start_by_host=False):
         if not set_talking:
@@ -25,6 +28,9 @@ class SerialManager:
             self.keyboard = None
             self.layout = None
             self.colorimeter.serial_start_time = None
+            # Clear session-specific overrides
+            self.session_timeout_seconds = None
+            self.session_transmission_interval_seconds = None
             gc.collect()
             time.sleep(0.5)
             return
@@ -42,8 +48,8 @@ class SerialManager:
             self.colorimeter.screen_manager.measure_screen.set_measurement(
                 self.colorimeter.measurement_name, None, "comm init", None, talking=self.colorimeter.is_talking)
             self.colorimeter.screen_manager.measure_screen.show()
-            if (start_by_host):
-                time.sleep(5)
+            if start_by_host:
+                time.sleep(2)
             self.layout.write("Timestamp,Measurement,Value,Unit,Type,Blanked,Concentration\n")
         except OSError as e:
             self.colorimeter.screen_manager.show_message("Run script not started", is_error=True)
@@ -64,24 +70,58 @@ class SerialManager:
                 self.colorimeter.screen_manager.measure_screen.show()
             time.sleep(0.1)
 
-    def handle_serial_communication(self):
-        # Check for incoming serial commands
-        if self.serial.in_waiting:
+    def process_commands(self):
+        """Process incoming serial commands with staged checking for INF, TIMEOUT, INTERVAL."""
+        while self.serial.in_waiting:
             self.buffer += self.serial.read(self.serial.in_waiting)
             if b"\n" in self.buffer:
                 lines = self.buffer.split(b"\n")
                 for line in lines[:-1]:
-                    command = line.decode().strip()
-                    if command == "1":
-                        self.serial.write(b"ACK_START\n")
-                        self.serial_talking(True, True)
-                    elif command == "0":
-                        self.serial.write(b"ACK_STOP\n")
-                        self.colorimeter.serial_count = 0
-                        self.serial_talking(False, True)
-                self.buffer = lines[-1]  # Save incomplete data
+                    try:
+                        command = line.decode('utf-8').strip()
+                        if command == "1":
+                            self.serial.write(b"ACK_START\n")
+                            self.serial.flush()
+                            # Move to INF checking stage
+                        elif command == "0":
+                            self.serial.write(b"ACK_STOP\n")
+                            self.serial.flush()
+                            self.colorimeter.serial_count = 0
+                            self.serial_talking(False, True)
+                        elif command.startswith("TIMEOUT:"):
+                            try:
+                                timeout_value = float(command.split(":")[1])
+                                self.session_timeout_seconds = timeout_value if timeout_value >= 0 else None
+                                self.serial.write(b"ACK_TIMEOUT\n")
+                                self.serial.flush()
+                                # Move to INTERVAL checking stage
+                            except:
+                                self.serial.write(b"ERR_TIMEOUT\n")
+                                self.serial.flush()
+                        elif command.startswith("INTERVAL:"):
+                            try:
+                                interval_value = float(command.split(":")[1])
+                                self.session_transmission_interval_seconds = interval_value if interval_value >= 0 else None
+                                self.serial.write(b"ACK_INTERVAL\n")
+                                self.serial.flush()
+                                # All required commands received, start serial talking
+                                self.serial_talking(True, True)
+                            except:
+                                self.serial.write(b"ERR_INTERVAL\n")
+                                self.serial.flush()
+                        else:
+                            self.serial.write(b"ERR_UNKNOWN\n")
+                            self.serial.flush()
+                    except Exception:
+                        self.serial.write(b"ERR_DECODE\n")
+                        self.serial.flush()
+                self.buffer = lines[-1]
 
-        # Existing measurement data transmission
+    def handle_serial_communication(self):
+        # Process incoming commands
+        self.process_commands()
+
+        # Proceed to measurement data transmission only after processing all commands
         if self.colorimeter.mode == Mode.MEASURE and self.colorimeter.is_talking and self.colorimeter.serial_connected and self.keyboard and self.layout and self.colorimeter.serial_start_time:
             try:
                 numeric_value, type_tag = self.colorimeter.measurement_value
@@ -91,15 +131,25 @@ class SerialManager:
 
                 current_time = time.monotonic()
                 relative_time = current_time - self.colorimeter.serial_start_time
-                if self.colorimeter.timeout_value and self.colorimeter.timeout_unit:
+                
+                # Use session-specific timeout if provided, otherwise fall back to internal
+                timeout_seconds = self.session_timeout_seconds
+                if timeout_seconds is None:
                     timeout_seconds = self.colorimeter._convert_to_seconds(
                         self.colorimeter.timeout_value, self.colorimeter.timeout_unit)
-                    if timeout_seconds and relative_time > timeout_seconds:
-                        self.colorimeter.is_talking = False
-                        self.colorimeter.serial_start_time = None
-                        self.colorimeter.serial_count = 0
-                transmission_interval_seconds = self.colorimeter._convert_to_seconds(
-                    self.colorimeter.transmission_interval_value, self.colorimeter.transmission_interval_unit)
+
+                if timeout_seconds and relative_time > timeout_seconds:
+                    self.colorimeter.is_talking = False
+                    self.colorimeter.serial_start_time = None
+                    self.colorimeter.serial_count = 0
+                    return
+
+                # Use session-specific interval if provided, otherwise fall back to internal
+                transmission_interval_seconds = self.session_transmission_interval_seconds
+                if transmission_interval_seconds is None:
+                    transmission_interval_seconds = self.colorimeter._convert_to_seconds(
+                        self.colorimeter.transmission_interval_value, self.colorimeter.transmission_interval_unit)
+
                 if current_time - self.colorimeter.last_transmission_time >= transmission_interval_seconds:
                     self.colorimeter.last_transmission_time = current_time
                     blanked = "True" if self.colorimeter.is_blanked else "False"
