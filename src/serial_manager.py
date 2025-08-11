@@ -139,6 +139,7 @@ class SerialManager:
                         self.colorimeter.timeout_value, self.colorimeter.timeout_unit)
 
                 if timeout_seconds and relative_time > timeout_seconds:
+                    self.layout.write("SESSION TIMEOUT\n")
                     self.colorimeter.is_talking = False
                     self.colorimeter.serial_start_time = None
                     self.colorimeter.serial_count = 0
