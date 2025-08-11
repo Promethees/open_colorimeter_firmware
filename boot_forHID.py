@@ -10,5 +10,3 @@ from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 keyboard = Keyboard(usb_hid.devices)
 layout = KeyboardLayoutUS(keyboard)
 usb_hid.enable((keyboard,))
-import usb_cdc
-usb_cdc.enable(console=False, data=True)
