@@ -137,19 +137,19 @@ class SerialManager:
                 if timeout_seconds is None:
                     timeout_seconds = self.colorimeter._convert_to_seconds(
                         self.colorimeter.timeout_value, self.colorimeter.timeout_unit)
-
-                if timeout_seconds and relative_time > timeout_seconds:
-                    self.layout.write("SESSION TIMEOUT\n")
-                    self.colorimeter.is_talking = False
-                    self.colorimeter.serial_start_time = None
-                    self.colorimeter.serial_count = 0
-                    return
-
+                    
                 # Use session-specific interval if provided, otherwise fall back to internal
                 transmission_interval_seconds = self.session_transmission_interval_seconds
                 if transmission_interval_seconds is None:
                     transmission_interval_seconds = self.colorimeter._convert_to_seconds(
                         self.colorimeter.transmission_interval_value, self.colorimeter.transmission_interval_unit)
+
+                if timeout_seconds and (relative_time > timeout_seconds or transmission_interval_seconds * self.colorimeter.serial_count >= timeout_seconds) :
+                    self.layout.write("SESSION TIMEOUT\n")
+                    self.colorimeter.is_talking = False
+                    self.colorimeter.serial_start_time = None
+                    self.colorimeter.serial_count = 0
+                    return
 
                 if current_time - self.colorimeter.last_transmission_time >= transmission_interval_seconds:
                     self.colorimeter.last_transmission_time = current_time
