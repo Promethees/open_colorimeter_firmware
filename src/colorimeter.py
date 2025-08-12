@@ -311,7 +311,8 @@ class Colorimeter:
         while True:
             self.button_handler.handle_button_press()
             self.screen_manager.update_screens()
-            self.serial_manager.handle_serial_communication()
+            if self.mode == Mode.MEASURE:
+                self.serial_manager.handle_serial_communication()
             self.battery_monitor.update()
             self.screen_manager.update_battery(self.battery_monitor.voltage_lowpass)
             time.sleep(constants.LOOP_DT)
